@@ -1,21 +1,44 @@
 import cron from 'node-cron';
 import pool from '../config/db.js';
+import { notifyCharitiesUrgent } from './notificationHelper.js';
 
-// Runs every 15 minutes
+// Auto-expire listings every 15 minutes
 cron.schedule('*/15 * * * *', async () => {
     try {
-        const result = await pool.query(
+        const expired = await pool.query(
             `UPDATE food_listings 
              SET status = 'expired' 
              WHERE expires_at < NOW() AND status = 'available'
              RETURNING id`
         );
-        if (result.rows.length > 0) {
-            console.log(`Auto-expired ${result.rows.length} listing(s)`);
+        if (expired.rows.length > 0) {
+            console.log(`Auto-expired ${expired.rows.length} listing(s)`);
         }
     } catch (error) {
-        console.error('Cron job error:', error);
+        console.error('Cron expire error:', error);
     }
 });
 
-console.log('Cron job scheduled: auto-expiry every 15 minutes');
+// Check for near-expiry listings every 30 minutes and notify charities
+cron.schedule('*/30 * * * *', async () => {
+    try {
+        const urgentListings = await pool.query(
+            `SELECT * FROM food_listings 
+             WHERE status = 'available'
+             AND expires_at > NOW()
+             AND expires_at <= NOW() + INTERVAL '2 hours'`
+        );
+
+        for (const listing of urgentListings.rows) {
+            await notifyCharitiesUrgent(listing);
+        }
+
+        if (urgentListings.rows.length > 0) {
+            console.log(`Sent urgent notifications for ${urgentListings.rows.length} listing(s)`);
+        }
+    } catch (error) {
+        console.error('Cron urgent error:', error);
+    }
+});
+
+console.log('Cron jobs scheduled');

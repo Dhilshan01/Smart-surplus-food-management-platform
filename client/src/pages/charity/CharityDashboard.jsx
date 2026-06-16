@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import BrowseListings from "./BrowseListings";
+import NotificationBell from "../../components/NotificationBell";
 
 const CharityDashboard = () => {
   const { user, token, logout } = useAuth();
@@ -14,9 +15,12 @@ const CharityDashboard = () => {
   const fetchClaims = useCallback(async () => {
     setLoadingClaims(true);
     try {
-      const res = await axios.get("http://localhost:5000/api/claims/my-claims", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        "http://localhost:5000/api/claims/my-claims",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       setClaims(res.data);
     } catch (error) {
       console.error(error);
@@ -46,19 +50,17 @@ const CharityDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Navbar */}
       <nav className="bg-white border-b border-gray-100 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <span className="font-bold text-gray-900 text-lg">🍱 FoodShare</span>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500">
-              {user?.organization_name || user?.full_name}
-            </span>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-red-500 hover:text-red-700 font-medium"
-            >
-              Logout
-            </button>
-          </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">
+            {user?.organization_name || user?.full_name}
+          </span>
+          <NotificationBell />
+          <button
+            onClick={handleLogout}
+            className="text-sm text-red-500 hover:text-red-700 font-medium"
+          >
+            Logout
+          </button>
         </div>
       </nav>
 
@@ -105,17 +107,28 @@ const CharityDashboard = () => {
           ) : (
             <div className="space-y-4">
               {claims.map((claim) => (
-                <div key={claim.id} className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+                <div
+                  key={claim.id}
+                  className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm"
+                >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{claim.title}</h3>
-                      <p className="text-sm text-gray-500 mt-1">{claim.quantity} · {claim.city}</p>
+                      <h3 className="font-semibold text-gray-900">
+                        {claim.title}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {claim.quantity} · {claim.city}
+                      </p>
                       <p className="text-xs text-gray-400 mt-1">
-                        Claimed on {new Date(claim.claimed_at).toLocaleDateString()}
+                        Claimed on{" "}
+                        {new Date(claim.claimed_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusColor[claim.status]}`}>
-                      {claim.status.charAt(0).toUpperCase() + claim.status.slice(1)}
+                    <span
+                      className={`text-xs font-medium px-3 py-1 rounded-full ${statusColor[claim.status]}`}
+                    >
+                      {claim.status.charAt(0).toUpperCase() +
+                        claim.status.slice(1)}
                     </span>
                   </div>
                 </div>
