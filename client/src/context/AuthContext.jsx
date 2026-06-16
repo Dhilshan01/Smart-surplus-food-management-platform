@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
 const AuthContext = createContext();
@@ -8,6 +9,12 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [loading, setLoading] = useState(true);
 
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    setToken(null);
+    setUser(null);
+  }, []);
+
   useEffect(() => {
     const fetchUser = async () => {
       if (token) {
@@ -16,25 +23,19 @@ export const AuthProvider = ({ children }) => {
             headers: { Authorization: `Bearer ${token}` },
           });
           setUser(res.data);
-        } catch (error) {
+        } catch {
           logout();
         }
       }
       setLoading(false);
     };
     fetchUser();
-  }, [token]);
+  }, [token, logout]);
 
   const login = (token, userData) => {
     localStorage.setItem("token", token);
     setToken(token);
     setUser(userData);
-  };
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
   };
 
   return (

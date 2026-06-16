@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-
 const safetyConfig = {
   safe: {
     label: "Safe",
@@ -24,7 +22,7 @@ const safetyConfig = {
   },
 };
 
-const ListingCard = ({ listing, showActions, onDelete, onStatusUpdate }) => {
+const ListingCard = ({ listing, showActions, onClaim, onDelete }) => {
   const safety = safetyConfig[listing.live_safety?.score || listing.safety_score] || safetyConfig.safe;
   const expiresAt = new Date(listing.expires_at);
   const hoursLeft = listing.live_safety?.hoursRemaining;
@@ -90,23 +88,25 @@ const ListingCard = ({ listing, showActions, onDelete, onStatusUpdate }) => {
 
         {/* Actions */}
         {showActions && (
-          <div className="flex gap-2">
-            <Link
-              to={`/listings/${listing.id}`}
-              className="flex-1 text-center text-sm bg-gray-900 hover:bg-gray-700 text-white py-2 rounded-lg transition font-medium"
-            >
-              View Details
-            </Link>
-            {onDelete && (
-              <button
-                onClick={() => onDelete(listing.id)}
-                className="px-3 py-2 text-sm bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition"
-              >
-                Delete
-              </button>
-            )}
-          </div>
-        )}
+  <div className="flex gap-2">
+    {onClaim && (
+      <button
+        onClick={() => onClaim(listing.id)}
+        className="flex-1 text-center text-sm bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition font-medium"
+      >
+        Claim Food
+      </button>
+    )}
+    {onDelete && (
+      <button
+        onClick={() => onDelete(listing.id)}
+        className="flex-1 text-center text-sm bg-gray-900 hover:bg-gray-700 text-white py-2 rounded-lg transition font-medium"
+      >
+        Delete
+      </button>
+    )}
+  </div>
+)}
       </div>
     </div>
   );

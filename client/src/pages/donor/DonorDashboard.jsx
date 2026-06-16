@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
@@ -11,11 +11,7 @@ const DonorDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, available: 0, claimed: 0, expired: 0 });
 
-  useEffect(() => {
-    fetchListings();
-  }, []);
-
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/listings/my-listings", {
         headers: { Authorization: `Bearer ${token}` },
@@ -32,7 +28,12 @@ const DonorDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchListings();
+  }, [fetchListings]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this listing?")) return;
