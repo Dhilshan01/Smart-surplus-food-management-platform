@@ -127,6 +127,7 @@ export const getMyListings = async (req, res) => {
       const safety = calculateSafetyScore(
         listing.prepared_at,
         listing.expires_at,
+        listing.storage_conditions,
       );
       return { ...listing, live_safety: safety };
     });
@@ -155,6 +156,7 @@ export const getListingById = async (req, res) => {
     const safety = calculateSafetyScore(
       listing.rows[0].prepared_at,
       listing.rows[0].expires_at,
+      listing.rows[0].storage_conditions,
     );
     res.status(200).json({ ...listing.rows[0], live_safety: safety });
   } catch (error) {

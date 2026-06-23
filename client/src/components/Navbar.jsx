@@ -1,17 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import NotificationBell from "./NotificationBell";
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
 
   const getDashboardLink = () => {
     if (user?.role === "donor") return "/donor/dashboard";
@@ -21,98 +14,73 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
+    <nav className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         <Link to={user ? getDashboardLink() : "/"} className="flex items-center gap-2">
-          <span className="text-2xl">🍱</span>
-          <span className="font-bold text-gray-900 text-lg">
-            Food<span className="text-green-600">Share</span>
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600 text-sm font-black text-white">
+            FF
+          </span>
+          <span className="text-lg font-black text-slate-950">
+            Food<span className="text-emerald-600">Flow</span>
           </span>
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden items-center gap-4 md:flex">
           {!user ? (
             <>
-              <Link to="/about" className="text-sm text-gray-500 hover:text-gray-800 transition">
-                About
-              </Link>
-              <Link
-                to="/login"
-                className="text-sm text-gray-700 font-medium hover:text-gray-900 transition"
-              >
+              <Link to="/login" className="text-sm font-semibold text-slate-600 transition hover:text-slate-950">
                 Sign In
               </Link>
               <Link
                 to="/register"
-                className="text-sm bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg transition"
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
               >
                 Get Started
               </Link>
             </>
           ) : (
-            <>
-              <Link
-                to={getDashboardLink()}
-                className="text-sm text-gray-500 hover:text-gray-800 font-medium transition"
-              >
-                Dashboard
-              </Link>
-              {user.role === "donor" && (
-                <Link
-                  to="/donor/create-listing"
-                  className="text-sm text-gray-500 hover:text-gray-800 font-medium transition"
-                >
-                  Post Food
-                </Link>
-              )}
-              <div className="flex items-center gap-3 pl-4 border-l border-gray-100">
-                <div className="text-right hidden lg:block">
-                  <p className="text-xs font-semibold text-gray-800">
-                    {user.organization_name || user.full_name}
-                  </p>
-                  <p className="text-xs text-gray-400 capitalize">{user.role}</p>
-                </div>
-                <NotificationBell />
-                <button
-                  onClick={handleLogout}
-                  className="text-sm text-red-500 hover:text-red-700 font-medium transition"
-                >
-                  Logout
-                </button>
-              </div>
-            </>
+            <Link
+              to={getDashboardLink()}
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
+            >
+              Open Workspace
+            </Link>
           )}
         </div>
 
-        {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+          type="button"
+          className="rounded-lg p-2 transition hover:bg-slate-100 md:hidden"
           onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle navigation"
         >
-          <div className="w-5 h-0.5 bg-gray-600 mb-1" />
-          <div className="w-5 h-0.5 bg-gray-600 mb-1" />
-          <div className="w-5 h-0.5 bg-gray-600" />
+          <div className="mb-1 h-0.5 w-5 bg-slate-600" />
+          <div className="mb-1 h-0.5 w-5 bg-slate-600" />
+          <div className="h-0.5 w-5 bg-slate-600" />
         </button>
       </div>
 
-      {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 space-y-3">
+        <div className="space-y-3 border-t border-slate-100 bg-white px-4 py-4 md:hidden">
           {!user ? (
             <>
-              <Link to="/login" className="block text-sm text-gray-700 font-medium py-2">Sign In</Link>
-              <Link to="/register" className="block text-sm bg-green-600 text-white font-semibold px-4 py-2 rounded-lg text-center">Get Started</Link>
+              <Link to="/login" className="block py-2 text-sm font-semibold text-slate-700">
+                Sign In
+              </Link>
+              <Link
+                to="/register"
+                className="block rounded-lg bg-emerald-600 px-4 py-2 text-center text-sm font-bold text-white"
+              >
+                Get Started
+              </Link>
             </>
           ) : (
-            <>
-              <Link to={getDashboardLink()} className="block text-sm text-gray-700 py-2">Dashboard</Link>
-              {user.role === "donor" && (
-                <Link to="/donor/create-listing" className="block text-sm text-gray-700 py-2">Post Food</Link>
-              )}
-              <button onClick={handleLogout} className="block text-sm text-red-500 font-medium py-2">Logout</button>
-            </>
+            <Link
+              to={getDashboardLink()}
+              className="block rounded-lg bg-emerald-600 px-4 py-2 text-center text-sm font-bold text-white"
+            >
+              Open Workspace
+            </Link>
           )}
         </div>
       )}

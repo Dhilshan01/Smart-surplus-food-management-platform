@@ -7,9 +7,9 @@ import { authorizeRoles } from '../middleware/roleMiddleware.js';
 
 const router = express.Router();
 
-router.post('/', protect, authorizeRoles('donor', 'business'), createTransaction);
-router.get('/my-purchases', protect, authorizeRoles('donor', 'business'), getMyPurchases);
-router.get('/my-sales', protect, authorizeRoles('donor', 'business'), getMySales);
-router.patch('/:id/collect', protect, authorizeRoles('donor', 'business'), markTransactionCollected);
+router.post('/', protect, authorizeRoles('donor'), createTransaction);
+router.get('/my-purchases', protect, authorizeRoles('donor'), getMyPurchases);
+router.get('/my-sales', protect, authorizeRoles('donor'), getMySales);
+router.patch('/:id/collect', protect, authorizeRoles('donor'), markTransactionCollected);
 
 export default router;

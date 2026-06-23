@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
+import DashboardLayout from "./components/DashboardLayout";
 import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -33,22 +34,22 @@ function App() {
 
           <Route path="/donor/dashboard" element={
             <ProtectedRoute roles={["donor"]}>
-              <Layout><DonorDashboard /></Layout>
+              <DashboardLayout><DonorDashboard /></DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/donor/create-listing" element={
             <ProtectedRoute roles={["donor"]}>
-              <Layout><CreateListing /></Layout>
+              <DashboardLayout><CreateListing /></DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/charity/dashboard" element={
             <ProtectedRoute roles={["charity"]}>
-              <Layout><CharityDashboard /></Layout>
+              <DashboardLayout><CharityDashboard /></DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/admin/dashboard" element={
             <ProtectedRoute roles={["admin"]}>
-              <Layout><AdminDashboard /></Layout>
+              <DashboardLayout><AdminDashboard /></DashboardLayout>
             </ProtectedRoute>
           } />
         </Routes>

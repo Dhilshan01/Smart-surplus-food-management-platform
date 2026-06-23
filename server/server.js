@@ -9,6 +9,7 @@ import claimRoutes from './routes/claimRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
 
 
 
@@ -27,6 +28,7 @@ app.use('/api/claims', claimRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/transactions', transactionRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.get('/', (req, res) => {
     res.send('Smart Food Waste API is running');

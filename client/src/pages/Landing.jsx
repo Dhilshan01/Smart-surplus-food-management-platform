@@ -1,250 +1,276 @@
 import { Link } from "react-router-dom";
 
-const stats = [
-  { value: "1 in 3", label: "Meals produced globally are wasted" },
-  { value: "820M+", label: "People face hunger worldwide" },
-  { value: "Real-time", label: "Food safety scoring system" },
+const metrics = [
+  { value: "3", label: "Role-based workspaces" },
+  { value: "Live", label: "Food safety scoring" },
+  { value: "24/7", label: "Expiry monitoring" },
+  { value: "B2B", label: "Sales and donation flows" },
 ];
 
-const features = [
+const roles = [
   {
-    icon: "🍱",
-    title: "Post Surplus Food",
-    description: "Restaurants, bakeries, hotels and event organizers can post surplus food in minutes.",
-    color: "bg-green-50 border-green-100",
-    iconBg: "bg-green-100",
+    title: "Businesses and donors",
+    description: "Post surplus food, choose donation or sale, track collections, and measure recovered value.",
+    items: ["Create listings", "Sell surplus stock", "Donate to charities", "View waste analytics"],
   },
   {
-    icon: "🚨",
-    title: "Urgency Notifications",
-    description: "Charities receive real-time alerts for food nearing expiry so nothing goes to waste.",
-    color: "bg-red-50 border-red-100",
-    iconBg: "bg-red-100",
+    title: "Charity organizations",
+    description: "Browse safe donation listings, claim food, and manage collection status from one workspace.",
+    items: ["Find donations", "Claim food", "Track collections", "Prioritize urgent listings"],
   },
   {
-    icon: "🛡️",
-    title: "Food Safety Scoring",
-    description: "Every listing is automatically scored as Safe, Moderate Risk, or Unsafe based on time.",
-    color: "bg-blue-50 border-blue-100",
-    iconBg: "bg-blue-100",
-  },
-  {
-    icon: "🤝",
-    title: "Direct Charity Matching",
-    description: "Charitable organizations browse and claim donations with a single click.",
-    color: "bg-purple-50 border-purple-100",
-    iconBg: "bg-purple-100",
-  },
-  {
-    icon: "⏰",
-    title: "Auto Expiry System",
-    description: "Expired listings are automatically hidden to prevent unsafe food redistribution.",
-    color: "bg-yellow-50 border-yellow-100",
-    iconBg: "bg-yellow-100",
-  },
-  {
-    icon: "📊",
-    title: "Impact Analytics",
-    description: "Admins monitor platform activity, user management, and food redistribution stats.",
-    color: "bg-gray-50 border-gray-100",
-    iconBg: "bg-gray-100",
+    title: "System administrators",
+    description: "Monitor users, listings, claims, safety risk, and platform activity across the system.",
+    items: ["Manage users", "Monitor listings", "Review claims", "View platform metrics"],
   },
 ];
 
-const howItWorks = [
-  { step: "01", title: "Register", description: "Sign up as a Food Donor or Charitable Organization.", icon: "📝" },
-  { step: "02", title: "Post or Browse", description: "Donors post surplus food. Charities browse available listings.", icon: "🔍" },
-  { step: "03", title: "Safety Check", description: "System scores every listing based on preparation and expiry time.", icon: "🛡️" },
-  { step: "04", title: "Collect", description: "Charity claims the food and collects it before it expires.", icon: "✅" },
+const workflow = [
+  {
+    step: "01",
+    title: "Register",
+    description: "Businesses, charities, and admins access role-specific dashboards after authentication.",
+  },
+  {
+    step: "02",
+    title: "List surplus food",
+    description: "A donor enters food details, quantity, pickup location, expiry time, storage conditions, and listing type.",
+  },
+  {
+    step: "03",
+    title: "Score safety",
+    description: "The platform calculates a live score using preparation time, expiry time, and storage conditions.",
+  },
+  {
+    step: "04",
+    title: "Redistribute",
+    description: "Businesses purchase sale listings, while charities claim donation listings before collection.",
+  },
+  {
+    step: "05",
+    title: "Analyze outcomes",
+    description: "Dashboards show recovered revenue, donated food, expired listings, and waste reduction trends.",
+  },
+];
+
+const modules = [
+  "JWT authentication and role-based access control",
+  "Surplus food listing management",
+  "B2B marketplace for discounted food sales",
+  "Charity donation claim workflow",
+  "Food safety scoring and expiry warnings",
+  "Waste analytics and sustainability reporting",
+  "Notifications for claims, purchases, and urgent expiry",
+  "Admin monitoring for users, listings, and claims",
+];
+
+const safetyLevels = [
+  {
+    label: "Safe",
+    range: "80-100",
+    description: "Good remaining shelf life. Suitable for sale or donation.",
+    className: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  },
+  {
+    label: "Moderate Risk",
+    range: "50-79",
+    description: "Needs quick action. Prioritize collection before expiry.",
+    className: "border-amber-200 bg-amber-50 text-amber-800",
+  },
+  {
+    label: "Unsafe",
+    range: "0-49",
+    description: "High risk or expired. Avoid redistribution and handle safely.",
+    className: "border-red-200 bg-red-50 text-red-800",
+  },
 ];
 
 const Landing = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-slate-950">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-slate-950">
+        <div className="mx-auto grid min-h-[calc(100vh-65px)] max-w-7xl items-center gap-10 px-4 py-16 lg:grid-cols-[1fr_420px]">
+          <div className="max-w-3xl">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-300">
+              Smart surplus food management platform
+            </p>
+            <h1 className="mt-5 text-5xl font-black tracking-tight text-white sm:text-6xl">
+              FoodFlow
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-200">
+              A web platform that helps businesses redistribute surplus food through B2B sales,
+              charity donations, expiry tracking, food safety scoring, and waste analytics.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                to="/register"
+                className="inline-flex justify-center rounded-lg bg-emerald-500 px-5 py-3 text-sm font-black text-white transition hover:bg-emerald-400"
+              >
+                Create account
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex justify-center rounded-lg border border-white/25 bg-white/10 px-5 py-3 text-sm font-black text-white backdrop-blur transition hover:bg-white/20"
+              >
+                Sign in
+              </Link>
+            </div>
+          </div>
 
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-gray-50 to-white pt-20 pb-24 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 uppercase tracking-wide">
-            Smart Food Waste Redistribution Platform
-          </span>
-          <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
-            Food that's wasted today
-            <span className="text-green-600"> could feed someone</span> tomorrow
-          </h1>
-          <p className="text-gray-500 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            A real-time platform connecting food donors with charitable organizations —
-            with built-in food safety scoring to ensure every donation is safe to consume.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/register"
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-8 py-3.5 rounded-xl transition text-sm shadow-sm"
-            >
-              Get Started Free
-            </Link>
-            <Link
-              to="/login"
-              className="bg-white border border-gray-200 hover:border-gray-300 text-gray-700 font-semibold px-8 py-3.5 rounded-xl transition text-sm"
-            >
-              Sign In
-            </Link>
+          <div className="rounded-lg border border-white/15 bg-white p-5 shadow-2xl">
+            <p className="text-sm font-black text-slate-950">What the system does</p>
+            <div className="mt-4 space-y-3">
+              {[
+                "Connects food donors, business buyers, charities, and admins.",
+                "Scores each listing before redistribution.",
+                "Tracks sales, donations, collected food, and expired food.",
+                "Supports analytics for waste reduction decisions.",
+              ].map((item) => (
+                <div key={item} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="text-sm leading-relaxed text-slate-700">{item}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="bg-gray-900 py-14 px-4">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          {stats.map((s) => (
-            <div key={s.label}>
-              <p className="text-4xl font-extrabold text-white mb-2">{s.value}</p>
-              <p className="text-gray-400 text-sm">{s.label}</p>
+      <section className="border-b border-slate-200 bg-white px-4 py-8">
+        <div className="mx-auto grid max-w-7xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {metrics.map((metric) => (
+            <div key={metric.label} className="rounded-lg border border-slate-200 p-5">
+              <p className="text-3xl font-black text-slate-950">{metric.value}</p>
+              <p className="mt-1 text-sm font-semibold text-slate-500">{metric.label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">Everything you need</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">
-              A complete platform for safe, efficient, and coordinated food redistribution.
+      <section className="bg-slate-50 px-4 py-16">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-2xl">
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">User roles</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+              Designed for every participant in the redistribution process.
+            </h2>
+          </div>
+
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+            {roles.map((role) => (
+              <article key={role.title} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="text-base font-black text-slate-950">{role.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-slate-600">{role.description}</p>
+                <ul className="mt-5 space-y-2">
+                  {role.items.map((item) => (
+                    <li key={item} className="flex gap-2 text-sm font-semibold text-slate-700">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-white px-4 py-16">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wide text-emerald-700">How to use</p>
+              <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+                From surplus food to measurable impact.
+              </h2>
+              <p className="mt-4 text-sm leading-relaxed text-slate-600">
+                The workflow is intentionally simple so food can be listed, scored, reserved,
+                collected, and reported before it expires.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {workflow.map((item) => (
+                <article key={item.step} className="grid gap-4 rounded-lg border border-slate-200 p-5 sm:grid-cols-[70px_1fr]">
+                  <span className="text-2xl font-black text-emerald-700">{item.step}</span>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-950">{item.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-600">{item.description}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-50 px-4 py-16">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_0.9fr]">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Core modules</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+              What is included in the platform.
+            </h2>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              {modules.map((module) => (
+                <div key={module} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                  <span className="block h-1.5 w-8 rounded-full bg-emerald-600" />
+                  <p className="mt-4 text-sm font-bold leading-relaxed text-slate-800">{module}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">Food safety scoring</p>
+            <h3 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
+              Every listing receives a risk category.
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-slate-600">
+              The score is calculated from preparation time, time remaining before expiry,
+              storage conditions, and food category context.
+            </p>
+            <div className="mt-6 space-y-3">
+              {safetyLevels.map((level) => (
+                <div key={level.label} className={`rounded-lg border p-4 ${level.className}`}>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-black">{level.label}</p>
+                    <p className="text-xs font-black">{level.range}</p>
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed">{level.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-slate-950 px-4 py-16">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-300">Ready to begin</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-white">
+              Reduce waste while improving redistribution decisions.
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">
+              Register as a food donor or charity organization and start using the platform workflow.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {features.map((f) => (
-              <div key={f.title} className={`rounded-2xl border p-6 ${f.color}`}>
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-4 ${f.iconBg}`}>
-                  {f.icon}
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{f.title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed">{f.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-20 px-4 bg-gray-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">How it works</h2>
-            <p className="text-gray-500">Simple steps to reduce food waste and feed communities.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {howItWorks.map((step, i) => (
-              <div key={step.step} className="relative">
-                <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm text-center">
-                  <div className="text-3xl mb-3">{step.icon}</div>
-                  <span className="text-xs font-bold text-green-600 uppercase tracking-widest">{step.step}</span>
-                  <h3 className="font-semibold text-gray-900 mt-1 mb-2">{step.title}</h3>
-                  <p className="text-gray-400 text-xs leading-relaxed">{step.description}</p>
-                </div>
-                {i < howItWorks.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-3 text-gray-300 text-lg z-10">→</div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Safety Scoring Section */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">Food Safety Scoring</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">
-              Our rule-based algorithm evaluates every listing in real-time based on
-              preparation time and expiry duration.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[
-              {
-                label: "Safe",
-                hours: "More than 6 hours remaining",
-                description: "Food is well within safe consumption time. Ideal for collection.",
-                bg: "bg-green-50 border-green-200",
-                badge: "bg-green-100 text-green-700",
-                dot: "bg-green-500",
-              },
-              {
-                label: "Moderate Risk",
-                hours: "2 to 6 hours remaining",
-                description: "Food should be collected urgently. Charities are notified immediately.",
-                bg: "bg-yellow-50 border-yellow-200",
-                badge: "bg-yellow-100 text-yellow-700",
-                dot: "bg-yellow-500",
-              },
-              {
-                label: "Unsafe",
-                hours: "Less than 2 hours remaining",
-                description: "Food is near expiry. Listing will be auto-removed from the platform.",
-                bg: "bg-red-50 border-red-200",
-                badge: "bg-red-100 text-red-700",
-                dot: "bg-red-500",
-              },
-            ].map((s) => (
-              <div key={s.label} className={`rounded-2xl border p-6 ${s.bg}`}>
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4 ${s.badge}`}>
-                  <span className={`w-2 h-2 rounded-full ${s.dot}`} />
-                  {s.label}
-                </span>
-                <p className="font-semibold text-gray-800 text-sm mb-2">{s.hours}</p>
-                <p className="text-gray-500 text-xs leading-relaxed">{s.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 px-4 bg-green-600">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to make a difference?
-          </h2>
-          <p className="text-green-100 mb-8 text-lg">
-            Join donors and charities already using FoodShare to reduce waste and feed communities.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <Link
               to="/register"
-              className="bg-white text-green-700 font-bold px-8 py-3.5 rounded-xl hover:bg-green-50 transition text-sm"
+              className="inline-flex justify-center rounded-lg bg-emerald-500 px-5 py-3 text-sm font-black text-white transition hover:bg-emerald-400"
             >
-              Register as Donor
+              Register
             </Link>
             <Link
-              to="/register"
-              className="bg-green-700 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-green-800 transition text-sm border border-green-500"
+              to="/login"
+              className="inline-flex justify-center rounded-lg border border-white/20 px-5 py-3 text-sm font-black text-white transition hover:bg-white/10"
             >
-              Register as Charity
+              Sign in
             </Link>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 py-10 px-4">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🍱</span>
-            <span className="font-bold text-white">Food<span className="text-green-400">Share</span></span>
-          </div>
-          <p className="text-gray-500 text-sm">
-            Smart Food Waste Redistribution Platform · Final Year Project
-          </p>
-          <div className="flex gap-6">
-            <Link to="/login" className="text-gray-400 hover:text-white text-sm transition">Sign In</Link>
-            <Link to="/register" className="text-gray-400 hover:text-white text-sm transition">Register</Link>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
