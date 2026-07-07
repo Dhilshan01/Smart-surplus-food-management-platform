@@ -3,20 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import ListingCard from "../../components/ListingCard";
-import Marketplace from "../business/Marketplace";
 import AnalyticsDashboard from "./AnalyticsDashboard";
-import ProfilePanel from "../../components/ProfilePanel";
 
 const currency = (value) => `Rs ${Number(value || 0).toFixed(2)}`;
 
 const tabs = [
   { key: "my-listings", label: "Listings" },
-  { key: "marketplace", label: "Marketplace" },
   { key: "analytics", label: "Analytics" },
   { key: "my-purchases", label: "Purchases" },
   { key: "my-sales", label: "Sales" },
   { key: "requests", label: "Requests" },
-  { key: "profile", label: "Profile" },
 ];
 
 const statusColor = {
@@ -223,7 +219,7 @@ const DonorDashboard = () => {
             {user?.organization_name || user?.full_name}
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Manage surplus listings, marketplace procurement, and redistribution impact.
+            Manage surplus listings, donation requests, purchase history, and redistribution impact.
           </p>
         </div>
         <Link
@@ -316,9 +312,7 @@ const DonorDashboard = () => {
         </section>
       )}
 
-      {mainTab === "marketplace" && <Marketplace />}
       {mainTab === "analytics" && <AnalyticsDashboard />}
-      {mainTab === "profile" && <ProfilePanel />}
 
       {mainTab === "my-purchases" && (
         <section>
@@ -329,13 +323,12 @@ const DonorDashboard = () => {
           {purchases.length === 0 ? (
             <div className="rounded-lg border border-slate-200 bg-white py-20 text-center shadow-sm">
               <p className="text-base font-black text-slate-950">No purchases yet</p>
-              <button
-                type="button"
-                onClick={() => setMainTab("marketplace")}
-                className="mt-5 rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700"
+              <Link
+                to="/donor/marketplace"
+                className="mt-5 inline-flex rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700"
               >
                 Browse marketplace
-              </button>
+              </Link>
             </div>
           ) : (
             renderTransactionList(purchases, "purchase")

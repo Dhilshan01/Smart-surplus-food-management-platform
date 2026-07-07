@@ -324,3 +324,55 @@ export const updateMe = async (req, res) => {
         client.release();
     }
 };
+
+export const changePassword = async (req, res) => {
+    const { current_password, new_password, confirm_password } = req.body;
+
+    if (!current_password || !new_password || !confirm_password) {
+        return res.status(400).json({ message: 'Current password, new password, and confirmation are required' });
+    }
+    if (new_password.length < 6) {
+        return res.status(400).json({ message: 'New password must be at least 6 characters' });
+    }
+    if (new_password !== confirm_password) {
+        return res.status(400).json({ message: 'New password and confirmation do not match' });
+    }
+    if (current_password === new_password) {
+        return res.status(400).json({ message: 'New password must be different from current password' });
+    }
+
+    try {
+        const user = await pool.query(
+            `SELECT id, password FROM users WHERE id = $1`,
+            [req.user.id]
+        );
+
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const isMatch = await bcrypt.compare(current_password, user.rows[0].password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Current password is incorrect' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(new_password, salt);
+
+        await pool.query(
+            `UPDATE users SET password = $1 WHERE id = $2`,
+            [hashedPassword, req.user.id]
+        );
+
+        await pool.query(
+            `INSERT INTO audit_logs (actor_id, action, entity_type, entity_id)
+             VALUES ($1, 'password.change', 'user', $1)`,
+            [req.user.id]
+        );
+
+        res.status(200).json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error('Change password error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};

@@ -3,7 +3,6 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import BrowseListings from "./BrowseListings";
 import MatchedListings from "./MatchedListings";
-import ProfilePanel from "../../components/ProfilePanel";
 
 
 const CharityDashboard = () => {
@@ -50,7 +49,6 @@ const CharityDashboard = () => {
             { key: "browse", label: "Browse Food" },
             { key: "matched", label: "Matched For You" },
             { key: "my-claims", label: "My Claims" },
-            { key: "profile", label: "Profile" },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -70,11 +68,6 @@ const CharityDashboard = () => {
       {/* Content */}
       {activeTab === "browse" && <BrowseListings />}
       {activeTab === "matched" && <MatchedListings />}
-      {activeTab === "profile" && (
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <ProfilePanel />
-        </div>
-      )}
 
       {activeTab === "my-claims" && (
         <div className="max-w-6xl mx-auto px-4 py-8">

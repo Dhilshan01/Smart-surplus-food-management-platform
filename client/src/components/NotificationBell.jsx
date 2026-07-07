@@ -23,9 +23,12 @@ const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const ref = useRef(null);
 
   const fetchUnreadCount = useCallback(async () => {
+    if (!token) return;
     try {
       const res = await axios.get(
         "http://localhost:5000/api/notifications/unread-count",
@@ -34,19 +37,25 @@ const NotificationBell = () => {
         },
       );
       setUnreadCount(res.data.count);
-    } catch (error) {
-      console.error(error);
+    } catch {
+      setUnreadCount(0);
     }
   }, [token]);
 
   const fetchNotifications = useCallback(async () => {
+    if (!token) return;
+    setLoading(true);
+    setError("");
     try {
       const res = await axios.get("http://localhost:5000/api/notifications", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotifications(res.data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not load notifications");
+    }
+    finally {
+      setLoading(false);
     }
   }, [token]);
 
@@ -66,8 +75,9 @@ const NotificationBell = () => {
   }, []);
 
   const handleOpen = () => {
-    setOpen(!open);
-    if (!open) fetchNotifications();
+    const nextOpen = !open;
+    setOpen(nextOpen);
+    if (nextOpen) fetchNotifications();
   };
 
   const handleMarkAllRead = async () => {
@@ -79,8 +89,8 @@ const NotificationBell = () => {
       );
       setUnreadCount(0);
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not update notifications");
     }
   };
 
@@ -95,9 +105,14 @@ const NotificationBell = () => {
         prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not update notification");
     }
+  };
+
+  const previewMessage = (message) => {
+    if (!message) return "No details provided.";
+    return message.length > 130 ? `${message.slice(0, 127)}...` : message;
   };
 
   return (
@@ -133,7 +148,7 @@ const NotificationBell = () => {
       </button>
 
       {open && (
-        <div className="absolute left-0 top-12 z-[100] w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl">
+        <div className="fixed right-4 top-16 z-[100] w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xl sm:absolute sm:right-0 sm:top-12 sm:w-96">
           <div className="flex items-center justify-between gap-3 border-b border-gray-200 bg-gray-50 px-4 py-3">
             <div>
               <h3 className="text-sm font-semibold text-gray-950">
@@ -155,7 +170,16 @@ const NotificationBell = () => {
           </div>
 
           <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
+            {loading ? (
+              <div className="py-10 text-center text-sm text-gray-500">
+                Loading notifications...
+              </div>
+            ) : error ? (
+              <div className="px-4 py-8 text-center">
+                <p className="text-sm font-semibold text-red-700">Notification preview unavailable</p>
+                <p className="mt-1 text-xs text-gray-500">{error}</p>
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="py-10 text-center text-sm text-gray-500">
                 No notifications yet
               </div>
@@ -186,8 +210,8 @@ const NotificationBell = () => {
                       >
                         {n.title}
                       </p>
-                      <p className="mt-1 text-sm leading-relaxed text-gray-600">
-                        {n.message}
+                      <p className="mt-1 line-clamp-2 break-words text-sm leading-relaxed text-gray-600">
+                        {previewMessage(n.message)}
                       </p>
                       <p className="mt-2 text-xs text-gray-500">
                         {new Date(n.created_at).toLocaleString()}

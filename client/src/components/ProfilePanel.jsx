@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 const inputClass =
   "w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100";
 
-const ProfilePanel = () => {
+const ProfilePanel = ({ compact = false }) => {
   const { user, token, login } = useAuth();
   const [formData, setFormData] = useState({
     full_name: "",
@@ -61,7 +61,7 @@ const ProfilePanel = () => {
   };
 
   return (
-    <section className="mx-auto max-w-3xl rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <section className={compact ? "bg-white" : "mx-auto max-w-3xl rounded-lg border border-slate-200 bg-white p-5 shadow-sm"}>
       <div className="mb-5">
         <h2 className="text-lg font-black text-slate-950">Profile</h2>
         <p className="mt-1 text-sm text-slate-500">

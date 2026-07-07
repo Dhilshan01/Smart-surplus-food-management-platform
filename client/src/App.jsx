@@ -8,6 +8,7 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import DonorDashboard from "./pages/donor/DonorDashboard";
 import CreateListing from "./pages/donor/CreateListing";
+import Marketplace from "./pages/business/Marketplace";
 import CharityDashboard from "./pages/charity/CharityDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 
@@ -40,6 +41,11 @@ function App() {
           <Route path="/donor/create-listing" element={
             <ProtectedRoute roles={["donor"]}>
               <DashboardLayout><CreateListing /></DashboardLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/donor/marketplace" element={
+            <ProtectedRoute roles={["donor"]}>
+              <DashboardLayout><Marketplace /></DashboardLayout>
             </ProtectedRoute>
           } />
           <Route path="/donor/edit-listing/:id" element={

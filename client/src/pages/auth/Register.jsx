@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import AuthFrame from "../../components/AuthFrame";
 
 const Register = () => {
   const { login } = useAuth();
@@ -52,19 +53,23 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg">
-
-        {/* Card */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-          <div className="text-center mb-8">
-            <span className="text-4xl">🍱</span>
-            <h1 className="text-2xl font-bold text-gray-900 mt-3">Create your account</h1>
-            <p className="text-gray-400 text-sm mt-1">Join FoodShare and start making a difference</p>
-          </div>
-
+    <AuthFrame
+      compact
+      contentClassName="max-w-xl"
+      eyebrow="Join the network"
+      title="Create account"
+      subtitle="Register your organization, then wait for admin verification before accessing platform tools."
+      footer={(
+        <p className="text-center text-sm text-[#748074]">
+          Already have an account?{" "}
+          <Link to="/login" className="font-bold text-emerald-700 hover:underline">
+            Sign in
+          </Link>
+        </p>
+      )}
+    >
           {/* Role Selector */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="mb-4 grid grid-cols-2 gap-2">
             {[
               { value: "donor", label: "Food Donor", icon: "🍱", desc: "Restaurant, bakery, hotel" },
               { value: "charity", label: "Charity / NGO", icon: "🤝", desc: "Community organization" },
@@ -73,14 +78,14 @@ const Register = () => {
                 key={r.value}
                 type="button"
                 onClick={() => setFormData({ ...formData, role: r.value })}
-                className={`p-4 rounded-2xl border-2 text-left transition ${
+                className={`rounded-lg border px-3 py-2.5 text-left transition ${
                   formData.role === r.value
-                    ? "border-green-500 bg-green-50"
-                    : "border-gray-100 hover:border-gray-200"
+                    ? "border-emerald-500 bg-emerald-50"
+                    : "border-[#dfe4d7] bg-[#f9fbf6] hover:border-emerald-200"
                 }`}
               >
-                <span className="text-2xl">{r.icon}</span>
-                <p className={`text-sm font-semibold mt-2 ${
+                <span className="hidden">{r.icon}</span>
+                <p className={`text-sm font-semibold ${
                   formData.role === r.value ? "text-green-700" : "text-gray-800"
                 }`}>
                   {r.label}
@@ -91,48 +96,48 @@ const Register = () => {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-3 rounded-xl mb-6 flex items-center gap-2">
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-red-600">
               <span>⚠️</span> {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="max-h-[48vh] space-y-3 overflow-y-auto pr-2">
             {/* Full Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Full Name</label>
               <input
                 type="text" name="full_name"
                 placeholder="Your full name"
                 value={formData.full_name} onChange={handleChange} required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email Address</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Email Address</label>
               <input
                 type="email" name="email"
                 placeholder="you@example.com"
                 value={formData.email} onChange={handleChange} required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Password</label>
               <input
                 type="password" name="password"
                 placeholder="Min 6 characters"
                 value={formData.password} onChange={handleChange} required
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
             {/* Organization */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Organization Name
                 <span className="text-gray-400 font-normal ml-1">(optional)</span>
               </label>
@@ -140,14 +145,14 @@ const Register = () => {
                 type="text" name="organization_name"
                 placeholder={formData.role === "donor" ? "e.g. Colombo Bakery" : "e.g. Hope Foundation"}
                 value={formData.organization_name} onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
             {formData.role === "donor" && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
                     Registration Number
                     <span className="text-gray-400 font-normal ml-1">(optional)</span>
                   </label>
@@ -155,15 +160,15 @@ const Register = () => {
                     type="text" name="registration_number"
                     placeholder="Business reg. no."
                     value={formData.registration_number} onChange={handleChange}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                    className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Business Type</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Business Type</label>
                   <select
                     name="business_type"
                     value={formData.business_type} onChange={handleChange}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white"
+                    className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="">Select type</option>
                     <option value="restaurant">Restaurant</option>
@@ -178,9 +183,9 @@ const Register = () => {
             )}
 
             {formData.role === "charity" && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
                     Registration Number
                     <span className="text-gray-400 font-normal ml-1">(optional)</span>
                   </label>
@@ -188,15 +193,15 @@ const Register = () => {
                     type="text" name="registration_number"
                     placeholder="Charity reg. no."
                     value={formData.registration_number} onChange={handleChange}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                    className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Charity Type</label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Charity Type</label>
                   <select
                     name="charity_type"
                     value={formData.charity_type} onChange={handleChange}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white"
+                    className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="">Select type</option>
                     <option value="ngo">NGO</option>
@@ -206,73 +211,65 @@ const Register = () => {
                     <option value="other">Other</option>
                   </select>
                 </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Service Area</label>
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Service Area</label>
                   <input
                     type="text" name="service_area"
                     placeholder="e.g. Colombo district"
                     value={formData.service_area} onChange={handleChange}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                    className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
             )}
 
             {/* Phone + City */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
                 <input
                   type="text" name="phone"
                   placeholder="07X XXXXXXX"
                   value={formData.phone} onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                  className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">City</label>
+                <label className="mb-1 block text-sm font-medium text-gray-700">City</label>
                 <input
                   type="text" name="city"
                   placeholder="e.g. Colombo"
                   value={formData.city} onChange={handleChange}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                  className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
             </div>
 
             {/* Address */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Address</label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Address</label>
               <input
                 type="text" name="address"
                 placeholder="Street address"
                 value={formData.address} onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
             {/* Safety Notice */}
-            <div className="bg-gray-50 rounded-xl p-4 text-xs text-gray-400 leading-relaxed">
+            <div className="rounded-lg bg-[#f3f6ef] p-3 text-xs leading-relaxed text-gray-500">
               By registering, you agree to use this platform responsibly and ensure all food donations meet safety standards.
             </div>
 
             <button
               type="submit" disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 text-sm"
+              className="w-full rounded-lg bg-green-600 py-2.5 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-50"
             >
               {loading ? "Creating Account..." : `Create ${formData.role === "donor" ? "Donor" : "Charity"} Account`}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-400 mt-6">
-            Already have an account?{" "}
-            <Link to="/login" className="text-green-600 font-semibold hover:underline">
-              Sign in
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+    </AuthFrame>
   );
 };
 

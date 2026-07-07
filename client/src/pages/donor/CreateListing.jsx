@@ -305,7 +305,7 @@ const CreateListing = () => {
               <div>
                 <label className="mb-2 block text-xs font-bold text-slate-600">Food category</label>
                 <div className="grid gap-2 sm:grid-cols-3">
-                  {categories.map((category, index) => (
+                  {categories.map((category) => (
                     <button
                       key={category}
                       type="button"
@@ -316,7 +316,6 @@ const CreateListing = () => {
                           : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                       }`}
                     >
-                      <span className="mr-2" aria-hidden="true">{["🍲", "🥖", "🍎", "🥛", "🥤", "📦", "🍽️"][index]}</span>
                       {category}
                     </button>
                   ))}
