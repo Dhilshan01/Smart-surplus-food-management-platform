@@ -3,6 +3,7 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import BrowseListings from "./BrowseListings";
 import MatchedListings from "./MatchedListings";
+import ProfilePanel from "../../components/ProfilePanel";
 
 
 const CharityDashboard = () => {
@@ -49,6 +50,7 @@ const CharityDashboard = () => {
             { key: "browse", label: "Browse Food" },
             { key: "matched", label: "Matched For You" },
             { key: "my-claims", label: "My Claims" },
+            { key: "profile", label: "Profile" },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -68,6 +70,11 @@ const CharityDashboard = () => {
       {/* Content */}
       {activeTab === "browse" && <BrowseListings />}
       {activeTab === "matched" && <MatchedListings />}
+      {activeTab === "profile" && (
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <ProfilePanel />
+        </div>
+      )}
 
       {activeTab === "my-claims" && (
         <div className="max-w-6xl mx-auto px-4 py-8">
@@ -76,7 +83,7 @@ const CharityDashboard = () => {
             <div className="mb-6 grid grid-cols-3 gap-3">
               {[
                 ["Total", claims.length],
-                ["Pending", claims.filter((claim) => claim.status !== "collected").length],
+                ["Pending", claims.filter((claim) => claim.status === "pending").length],
                 ["Collected", claims.filter((claim) => claim.status === "collected").length],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-xl border bg-white p-4">
@@ -130,7 +137,7 @@ const CharityDashboard = () => {
                         claim.status.slice(1)}
                     </span>
                   </div>
-                  {claim.status !== "collected" && (
+                  {claim.status === "approved" && (
                     <button
                       onClick={async () => {
                         await axios.patch(

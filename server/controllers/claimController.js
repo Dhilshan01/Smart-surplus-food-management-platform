@@ -34,26 +34,112 @@ export const claimListing = async (req, res) => {
       [listing_id, charity_id, notes],
     );
 
-    // Update listing status to claimed
-    await pool.query(
-      `UPDATE food_listings SET status = 'claimed' WHERE id = $1`,
-      [listing_id],
-    );
-
     await createNotification(
       listing.rows[0].donor_id,
-      "Your Food Was Claimed",
-      `Your listing "${listing.rows[0].title}" has been claimed by a charitable organization.`,
+      "New Donation Request",
+      `Your listing "${listing.rows[0].title}" has a new donation request.`,
       "claimed",
     );
 
     res.status(201).json({
-      message: "Listing claimed successfully",
+      message: "Donation request submitted",
       claim: claim.rows[0],
     });
   } catch (error) {
     console.error("Claim error:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getReceivedClaims = async (req, res) => {
+  try {
+    const claims = await pool.query(
+      `SELECT c.*, fl.title, fl.quantity, fl.city, fl.expires_at, fl.food_category,
+              u.full_name AS charity_name, u.organization_name AS charity_org, u.phone AS charity_phone
+       FROM claims c
+       JOIN food_listings fl ON c.listing_id = fl.id
+       JOIN users u ON c.charity_id = u.id
+       WHERE fl.donor_id = $1
+       ORDER BY c.claimed_at DESC`,
+      [req.user.id],
+    );
+    res.status(200).json(claims.rows);
+  } catch (error) {
+    console.error("Get received claims error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateClaimDecision = async (req, res) => {
+  const { status } = req.body;
+
+  if (!["approved", "rejected"].includes(status)) {
+    return res.status(400).json({ message: "Status must be approved or rejected" });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const claim = await client.query(
+      `SELECT c.*, fl.donor_id, fl.title, fl.status AS listing_status
+       FROM claims c
+       JOIN food_listings fl ON fl.id = c.listing_id
+       WHERE c.id = $1 AND fl.donor_id = $2`,
+      [req.params.id, req.user.id],
+    );
+
+    if (claim.rows.length === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ message: "Request not found or unauthorized" });
+    }
+
+    if (claim.rows[0].status !== "pending") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "Only pending requests can be updated" });
+    }
+
+    if (status === "approved" && claim.rows[0].listing_status !== "available") {
+      await client.query("ROLLBACK");
+      return res.status(400).json({ message: "Listing is no longer available" });
+    }
+
+    const updated = await client.query(
+      `UPDATE claims SET status = $1 WHERE id = $2 RETURNING *`,
+      [status, req.params.id],
+    );
+
+    if (status === "approved") {
+      await client.query(`UPDATE food_listings SET status = 'claimed' WHERE id = $1`, [claim.rows[0].listing_id]);
+      await client.query(
+        `UPDATE claims SET status = 'rejected'
+         WHERE listing_id = $1 AND id != $2 AND status = 'pending'`,
+        [claim.rows[0].listing_id, req.params.id],
+      );
+    }
+
+    await client.query(
+      `INSERT INTO audit_logs (actor_id, action, entity_type, entity_id, details)
+       VALUES ($1, $2, 'claim', $3, $4)`,
+      [req.user.id, `claim.${status}`, req.params.id, JSON.stringify({ listing_id: claim.rows[0].listing_id })],
+    );
+
+    await client.query("COMMIT");
+
+    await createNotification(
+      claim.rows[0].charity_id,
+      status === "approved" ? "Donation Request Approved" : "Donation Request Rejected",
+      `Your request for "${claim.rows[0].title}" was ${status}.`,
+      status,
+    );
+
+    res.status(200).json({ message: `Request ${status}`, claim: updated.rows[0] });
+  } catch (error) {
+    await client.query("ROLLBACK");
+    console.error("Update claim decision error:", error);
+    res.status(500).json({ message: "Server error" });
+  } finally {
+    client.release();
   }
 };
 
@@ -82,12 +168,12 @@ export const markCollected = async (req, res) => {
   try {
     const claim = await pool.query(
       `UPDATE claims SET status = 'collected', collected_at = NOW()
-             WHERE id = $1 AND charity_id = $2 RETURNING *`,
+             WHERE id = $1 AND charity_id = $2 AND status = 'approved' RETURNING *`,
       [req.params.id, req.user.id],
     );
 
     if (claim.rows.length === 0) {
-      return res.status(404).json({ message: "Claim not found" });
+      return res.status(404).json({ message: "Approved claim not found" });
     }
 
     // Update listing status

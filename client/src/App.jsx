@@ -42,6 +42,11 @@ function App() {
               <DashboardLayout><CreateListing /></DashboardLayout>
             </ProtectedRoute>
           } />
+          <Route path="/donor/edit-listing/:id" element={
+            <ProtectedRoute roles={["donor"]}>
+              <DashboardLayout><CreateListing /></DashboardLayout>
+            </ProtectedRoute>
+          } />
           <Route path="/charity/dashboard" element={
             <ProtectedRoute roles={["charity"]}>
               <DashboardLayout><CharityDashboard /></DashboardLayout>

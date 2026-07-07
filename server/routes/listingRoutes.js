@@ -5,6 +5,7 @@ import {
     getMyListings,
     getListingById,
     updateListingStatus,
+    updateListing,
     deleteListing,
     getMarketplaceListings,
     getMatchedListings
@@ -21,6 +22,7 @@ router.get('/my-listings', protect, authorizeRoles('donor'), getMyListings);
 router.get('/marketplace', protect, authorizeRoles('donor'), getMarketplaceListings);
 router.get('/matched', protect, authorizeRoles('charity'), getMatchedListings);
 router.get('/:id', protect, getListingById);
+router.put('/:id', protect, authorizeRoles('donor'), updateListing);
 router.patch('/:id/status', protect, authorizeRoles('donor'), updateListingStatus);
 router.delete('/:id', protect, authorizeRoles('donor'), deleteListing);
 

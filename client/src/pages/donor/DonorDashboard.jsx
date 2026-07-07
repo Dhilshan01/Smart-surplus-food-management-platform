@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import ListingCard from "../../components/ListingCard";
 import Marketplace from "../business/Marketplace";
 import AnalyticsDashboard from "./AnalyticsDashboard";
+import ProfilePanel from "../../components/ProfilePanel";
 
 const currency = (value) => `Rs ${Number(value || 0).toFixed(2)}`;
 
@@ -14,6 +15,8 @@ const tabs = [
   { key: "analytics", label: "Analytics" },
   { key: "my-purchases", label: "Purchases" },
   { key: "my-sales", label: "Sales" },
+  { key: "requests", label: "Requests" },
+  { key: "profile", label: "Profile" },
 ];
 
 const statusColor = {
@@ -25,10 +28,12 @@ const statusColor = {
 
 const DonorDashboard = () => {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
   const [mainTab, setMainTab] = useState("my-listings");
   const [listings, setListings] = useState([]);
   const [purchases, setPurchases] = useState([]);
   const [sales, setSales] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
 
@@ -67,6 +72,17 @@ const DonorDashboard = () => {
     }
   }, [token]);
 
+  const fetchRequests = useCallback(async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/claims/received", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setRequests(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [token]);
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchListings();
@@ -76,7 +92,8 @@ const DonorDashboard = () => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (mainTab === "my-purchases") fetchPurchases();
     if (mainTab === "my-sales") fetchSales();
-  }, [fetchPurchases, fetchSales, mainTab]);
+    if (mainTab === "requests") fetchRequests();
+  }, [fetchPurchases, fetchSales, fetchRequests, mainTab]);
 
   const stats = useMemo(() => {
     const available = listings.filter((listing) => listing.status === "available").length;
@@ -131,6 +148,20 @@ const DonorDashboard = () => {
       fetchListings();
     } catch (error) {
       alert(error.response?.data?.message || "Failed to mark as collected");
+    }
+  };
+
+  const handleRequestDecision = async (claimId, status) => {
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/claims/${claimId}/decision`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      fetchRequests();
+      fetchListings();
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to update request");
     }
   };
 
@@ -276,6 +307,7 @@ const DonorDashboard = () => {
                   key={listing.id}
                   listing={listing}
                   showActions
+                  onEdit={() => navigate(`/donor/edit-listing/${listing.id}`)}
                   onDelete={listing.status === "available" ? handleDelete : null}
                 />
               ))}
@@ -286,6 +318,7 @@ const DonorDashboard = () => {
 
       {mainTab === "marketplace" && <Marketplace />}
       {mainTab === "analytics" && <AnalyticsDashboard />}
+      {mainTab === "profile" && <ProfilePanel />}
 
       {mainTab === "my-purchases" && (
         <section>
@@ -328,6 +361,59 @@ const DonorDashboard = () => {
             </div>
           ) : (
             renderTransactionList(sales, "sale")
+          )}
+        </section>
+      )}
+
+      {mainTab === "requests" && (
+        <section>
+          <div className="mb-4">
+            <h2 className="text-lg font-black text-slate-950">Donation requests</h2>
+            <p className="mt-1 text-sm text-slate-500">Approve or reject charity requests for your donation listings.</p>
+          </div>
+          {requests.length === 0 ? (
+            <div className="rounded-lg border border-slate-200 bg-white py-20 text-center text-sm font-semibold text-slate-500">
+              No donation requests yet
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {requests.map((request) => (
+                <article key={request.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <h3 className="font-black text-slate-950">{request.title}</h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {request.charity_org || request.charity_name} requested {request.quantity} in {request.city}
+                      </p>
+                      {request.notes && <p className="mt-2 text-sm text-slate-600">{request.notes}</p>}
+                    </div>
+                    <div className="flex flex-col items-start gap-2 sm:items-end">
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-black capitalize text-slate-700">
+                        {request.status}
+                      </span>
+                      {request.status === "pending" && (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleRequestDecision(request.id, "approved")}
+                            className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRequestDecision(request.id, "rejected")}
+                            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-700 hover:bg-red-100"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           )}
         </section>
       )}

@@ -23,7 +23,7 @@ const statusConfig = {
   expired: "border-red-200 bg-red-50 text-red-700",
 };
 
-const ListingCard = ({ listing, showActions, onClaim, onDelete }) => {
+const ListingCard = ({ listing, showActions, onClaim, onEdit, onDelete }) => {
   const safety = safetyConfig[listing.live_safety?.score || listing.safety_score] || safetyConfig.safe;
   const status = statusConfig[listing.status] || statusConfig.available;
   const expiresAt = new Date(listing.expires_at);
@@ -80,7 +80,7 @@ const ListingCard = ({ listing, showActions, onClaim, onDelete }) => {
           </div>
         )}
 
-        {showActions && (onClaim || onDelete) && (
+        {showActions && (onClaim || onEdit || onDelete) && (
           <div className="mt-4 flex gap-2">
             {onClaim && (
               <button
@@ -89,6 +89,15 @@ const ListingCard = ({ listing, showActions, onClaim, onDelete }) => {
                 className="flex-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-black text-white transition hover:bg-emerald-700"
               >
                 Claim
+              </button>
+            )}
+            {onEdit && (
+              <button
+                type="button"
+                onClick={() => onEdit(listing.id)}
+                className="flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-black text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+              >
+                Edit
               </button>
             )}
             {onDelete && (

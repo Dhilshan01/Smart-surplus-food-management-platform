@@ -16,6 +16,10 @@ const Register = () => {
     phone: "",
     address: "",
     city: "",
+    registration_number: "",
+    business_type: "",
+    service_area: "",
+    charity_type: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -139,6 +143,80 @@ const Register = () => {
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
               />
             </div>
+
+            {formData.role === "donor" && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Registration Number
+                    <span className="text-gray-400 font-normal ml-1">(optional)</span>
+                  </label>
+                  <input
+                    type="text" name="registration_number"
+                    placeholder="Business reg. no."
+                    value={formData.registration_number} onChange={handleChange}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Business Type</label>
+                  <select
+                    name="business_type"
+                    value={formData.business_type} onChange={handleChange}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white"
+                  >
+                    <option value="">Select type</option>
+                    <option value="restaurant">Restaurant</option>
+                    <option value="bakery">Bakery</option>
+                    <option value="grocery">Grocery</option>
+                    <option value="hotel">Hotel</option>
+                    <option value="caterer">Caterer</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {formData.role === "charity" && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                    Registration Number
+                    <span className="text-gray-400 font-normal ml-1">(optional)</span>
+                  </label>
+                  <input
+                    type="text" name="registration_number"
+                    placeholder="Charity reg. no."
+                    value={formData.registration_number} onChange={handleChange}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Charity Type</label>
+                  <select
+                    name="charity_type"
+                    value={formData.charity_type} onChange={handleChange}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition bg-white"
+                  >
+                    <option value="">Select type</option>
+                    <option value="ngo">NGO</option>
+                    <option value="shelter">Shelter</option>
+                    <option value="community_kitchen">Community Kitchen</option>
+                    <option value="religious">Religious Organization</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Service Area</label>
+                  <input
+                    type="text" name="service_area"
+                    placeholder="e.g. Colombo district"
+                    value={formData.service_area} onChange={handleChange}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Phone + City */}
             <div className="grid grid-cols-2 gap-4">

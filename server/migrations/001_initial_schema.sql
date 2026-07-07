@@ -1,7 +1,9 @@
 CREATE TABLE IF NOT EXISTS users (
  id SERIAL PRIMARY KEY, full_name TEXT NOT NULL, email TEXT UNIQUE NOT NULL, password TEXT NOT NULL,
  role TEXT NOT NULL CHECK(role IN ('donor','charity','admin')), organization_name TEXT, phone TEXT,
- address TEXT, city TEXT, is_active BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW()
+ address TEXT, city TEXT, is_active BOOLEAN DEFAULT TRUE,
+ verification_status TEXT DEFAULT 'pending' CHECK(verification_status IN ('pending','verified','rejected')),
+ verified_at TIMESTAMPTZ, created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE TABLE IF NOT EXISTS food_listings (
  id SERIAL PRIMARY KEY, donor_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -29,6 +31,10 @@ CREATE TABLE IF NOT EXISTS business_profiles (
  id SERIAL PRIMARY KEY, user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
  registration_number TEXT, business_type TEXT, created_at TIMESTAMPTZ DEFAULT NOW()
 );
+CREATE TABLE IF NOT EXISTS charity_profiles (
+ id SERIAL PRIMARY KEY, user_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+ registration_number TEXT, service_area TEXT, charity_type TEXT, created_at TIMESTAMPTZ DEFAULT NOW()
+);
 CREATE TABLE IF NOT EXISTS transactions (
  id SERIAL PRIMARY KEY, listing_id INT REFERENCES food_listings(id) ON DELETE CASCADE,
  seller_id INT REFERENCES users(id) ON DELETE CASCADE, buyer_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -39,5 +45,10 @@ CREATE TABLE IF NOT EXISTS waste_analytics (
  id SERIAL PRIMARY KEY, business_id INT REFERENCES users(id) ON DELETE CASCADE,
  listing_id INT REFERENCES food_listings(id) ON DELETE CASCADE,
  outcome TEXT CHECK(outcome IN ('sold','donated','wasted')), estimated_value NUMERIC(12,2) DEFAULT 0,
+ created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS audit_logs (
+ id SERIAL PRIMARY KEY, actor_id INT REFERENCES users(id) ON DELETE SET NULL,
+ action TEXT NOT NULL, entity_type TEXT, entity_id INT, details JSONB DEFAULT '{}'::jsonb,
  created_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -10,6 +10,8 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [listings, setListings] = useState([]);
   const [claims, setClaims] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [auditLogs, setAuditLogs] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -82,6 +84,34 @@ const AdminDashboard = () => {
     }
   }, [token]);
 
+  const fetchTransactions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("http://localhost:5000/api/admin/transactions", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTransactions(res.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  const fetchAuditLogs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("http://localhost:5000/api/admin/audit-logs", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAuditLogs(res.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchStats();
@@ -92,8 +122,10 @@ const AdminDashboard = () => {
     if (activeTab === "users") fetchUsers();
     if (activeTab === "listings") fetchListings();
     if (activeTab === "claims") fetchClaims();
+    if (activeTab === "transactions") fetchTransactions();
+    if (activeTab === "audit") fetchAuditLogs();
     if (activeTab === "analytics") fetchAnalytics();
-  }, [activeTab, fetchUsers, fetchListings, fetchClaims, fetchAnalytics]);
+  }, [activeTab, fetchUsers, fetchListings, fetchClaims, fetchTransactions, fetchAuditLogs, fetchAnalytics]);
 
   const handleToggleUser = async (id) => {
     try {
@@ -125,6 +157,19 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleVerifyUser = async (id, status) => {
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/admin/users/${id}/verification`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      fetchUsers();
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to update verification");
+    }
+  };
+
   const handleDeleteListing = async (id) => {
     if (!window.confirm("Delete this listing?")) return;
     try {
@@ -142,6 +187,8 @@ const AdminDashboard = () => {
     { key: "users", label: "Users" },
     { key: "listings", label: "Listings" },
     { key: "claims", label: "Claims" },
+    { key: "transactions", label: "Transactions" },
+    { key: "audit", label: "Audit Logs" },
     { key: "analytics", label: "Analytics" },
   ];
 
@@ -390,6 +437,7 @@ const AdminDashboard = () => {
                       "Role",
                       "Organization",
                       "City",
+                      "Verification",
                       "Status",
                       "Actions",
                     ].map((h) => (
@@ -429,6 +477,19 @@ const AdminDashboard = () => {
                       <td className="px-5 py-4">
                         <span
                           className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                            u.verification_status === "verified"
+                              ? "bg-green-100 text-green-700"
+                              : u.verification_status === "rejected"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {u.verification_status || "pending"}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                             u.is_active
                               ? "bg-green-100 text-green-700"
                               : "bg-red-100 text-red-700"
@@ -454,6 +515,18 @@ const AdminDashboard = () => {
                           className="text-xs font-medium px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition"
                         >
                           Delete
+                        </button>
+                        <button
+                          onClick={() => handleVerifyUser(u.id, "verified")}
+                          className="text-xs font-medium px-3 py-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 transition"
+                        >
+                          Verify
+                        </button>
+                        <button
+                          onClick={() => handleVerifyUser(u.id, "rejected")}
+                          className="text-xs font-medium px-3 py-1.5 rounded-lg bg-yellow-50 text-yellow-700 hover:bg-yellow-100 transition"
+                        >
+                          Reject
                         </button>
                         </div>
                       </td>
@@ -594,6 +667,67 @@ const AdminDashboard = () => {
                       <td className="px-5 py-4 text-gray-500 text-xs">
                         {new Date(c.claimed_at).toLocaleString()}
                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "transactions" && (
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Transactions</h2>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    {["Food Item", "Seller", "Buyer", "Amount", "Status", "Created"].map((h) => (
+                      <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {transactions.map((t) => (
+                    <tr key={t.id} className="hover:bg-gray-50 transition">
+                      <td className="px-5 py-4 font-medium text-gray-900">{t.title}</td>
+                      <td className="px-5 py-4 text-gray-500">{t.seller_org || t.seller_name}</td>
+                      <td className="px-5 py-4 text-gray-500">{t.buyer_org || t.buyer_name}</td>
+                      <td className="px-5 py-4 font-bold text-gray-900">Rs {Number(t.total_amount || 0).toFixed(2)}</td>
+                      <td className="px-5 py-4 text-gray-500">{t.status}</td>
+                      <td className="px-5 py-4 text-gray-500 text-xs">{new Date(t.created_at).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "audit" && (
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Audit Logs</h2>
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    {["Action", "Actor", "Entity", "Details", "Time"].map((h) => (
+                      <th key={h} className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase">
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {auditLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-gray-50 transition">
+                      <td className="px-5 py-4 font-medium text-gray-900">{log.action}</td>
+                      <td className="px-5 py-4 text-gray-500">{log.actor_email || log.actor_name || "System"}</td>
+                      <td className="px-5 py-4 text-gray-500">{log.entity_type} #{log.entity_id}</td>
+                      <td className="px-5 py-4 text-gray-500 text-xs">{JSON.stringify(log.details || {})}</td>
+                      <td className="px-5 py-4 text-gray-500 text-xs">{new Date(log.created_at).toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>

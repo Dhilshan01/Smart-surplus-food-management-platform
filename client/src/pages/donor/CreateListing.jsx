@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 
@@ -94,6 +94,8 @@ const inputClass =
 const CreateListing = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditing = Boolean(id);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -116,6 +118,45 @@ const CreateListing = () => {
     [formData.prepared_at, formData.expires_at, formData.storage_conditions],
   );
 
+  const toDateTimeLocal = (value) => {
+    if (!value) return "";
+    const date = new Date(value);
+    const offsetDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return offsetDate.toISOString().slice(0, 16);
+  };
+
+  const loadListing = useCallback(async () => {
+    if (!isEditing) return;
+    setLoading(true);
+    try {
+      const res = await axios.get(`http://localhost:5000/api/listings/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const listing = res.data;
+      setFormData({
+        title: listing.title || "",
+        description: listing.description || "",
+        quantity: listing.quantity || "",
+        food_category: listing.food_category || "",
+        prepared_at: toDateTimeLocal(listing.prepared_at),
+        expires_at: toDateTimeLocal(listing.expires_at),
+        pickup_address: listing.pickup_address || "",
+        city: listing.city || "",
+        listing_type: listing.listing_type || "donation",
+        unit_price: listing.unit_price || "",
+        storage_conditions: listing.storage_conditions || "room_temperature",
+      });
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not load listing");
+    } finally {
+      setLoading(false);
+    }
+  }, [id, isEditing, token]);
+
+  useEffect(() => {
+    loadListing();
+  }, [loadListing]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -134,9 +175,14 @@ const CreateListing = () => {
     setError("");
 
     try {
-      await axios.post("http://localhost:5000/api/listings", formData, {
+      const config = {
         headers: { Authorization: `Bearer ${token}` },
-      });
+      };
+      if (isEditing) {
+        await axios.put(`http://localhost:5000/api/listings/${id}`, formData, config);
+      } else {
+        await axios.post("http://localhost:5000/api/listings", formData, config);
+      }
       navigate("/donor/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create listing");
@@ -150,9 +196,11 @@ const CreateListing = () => {
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Listing intake</p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950">Create surplus listing</h1>
+          <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950">
+            {isEditing ? "Edit surplus listing" : "Create surplus listing"}
+          </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Publish food for donation or B2B resale with live safety scoring.
+            {isEditing ? "Update listing details and refresh the safety score." : "Publish food for donation or B2B resale with live safety scoring."}
           </p>
         </div>
         <button
@@ -413,7 +461,7 @@ const CreateListing = () => {
               formData.listing_type === "sale" ? "bg-red-600 hover:bg-red-700" : "bg-emerald-600 hover:bg-emerald-700"
             }`}
           >
-            {loading ? "Publishing..." : formData.listing_type === "sale" ? "Publish sale listing" : "Publish donation"}
+            {loading ? "Saving..." : isEditing ? "Save listing" : formData.listing_type === "sale" ? "Publish sale listing" : "Publish donation"}
           </button>
         </aside>
       </form>

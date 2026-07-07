@@ -12,6 +12,16 @@ export const createListing = async (req, res) => {
     const donor_id = req.user.id;
 
     try {
+        if (!title || !quantity || !prepared_at || !expires_at || !pickup_address || !city) {
+            return res.status(400).json({ message: 'Required listing fields are missing' });
+        }
+        if (!['donation', 'sale', undefined, null, ''].includes(listing_type)) {
+            return res.status(400).json({ message: 'Listing type must be donation or sale' });
+        }
+        if (new Date(expires_at) <= new Date(prepared_at)) {
+            return res.status(400).json({ message: 'Expiry time must be after preparation time' });
+        }
+
         const safety = calculateSafetyScore(prepared_at, expires_at, storage_conditions);
 
         const newListing = await pool.query(
@@ -216,6 +226,10 @@ export const getListingById = async (req, res) => {
 export const updateListingStatus = async (req, res) => {
   const { status } = req.body;
 
+  if (!["available", "claimed", "collected", "expired"].includes(status)) {
+    return res.status(400).json({ message: "Invalid listing status" });
+  }
+
   try {
     const listing = await pool.query(
       `UPDATE food_listings SET status = $1 WHERE id = $2 AND donor_id = $3 RETURNING *`,
@@ -231,6 +245,108 @@ export const updateListingStatus = async (req, res) => {
     res
       .status(200)
       .json({ message: "Status updated", listing: listing.rows[0] });
+  } catch (error) {
+    console.error("Update listing error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateListing = async (req, res) => {
+  const {
+    title,
+    description,
+    quantity,
+    food_category,
+    prepared_at,
+    expires_at,
+    pickup_address,
+    city,
+    listing_type,
+    unit_price,
+    storage_conditions,
+    latitude,
+    longitude,
+  } = req.body;
+
+  try {
+    const current = await pool.query(
+      `SELECT * FROM food_listings WHERE id = $1 AND donor_id = $2`,
+      [req.params.id, req.user.id],
+    );
+
+    if (current.rows.length === 0) {
+      return res.status(404).json({ message: "Listing not found or unauthorized" });
+    }
+
+    if (current.rows[0].status !== "available") {
+      return res.status(400).json({ message: "Only available listings can be edited" });
+    }
+
+    const nextPreparedAt = prepared_at || current.rows[0].prepared_at;
+    const nextExpiresAt = expires_at || current.rows[0].expires_at;
+    const nextStorage = storage_conditions || current.rows[0].storage_conditions;
+    if (!["donation", "sale", undefined, null, ""].includes(listing_type)) {
+      return res.status(400).json({ message: "Listing type must be donation or sale" });
+    }
+    if (new Date(nextExpiresAt) <= new Date(nextPreparedAt)) {
+      return res.status(400).json({ message: "Expiry time must be after preparation time" });
+    }
+    const safety = calculateSafetyScore(nextPreparedAt, nextExpiresAt, nextStorage);
+    const nextListingType = listing_type || current.rows[0].listing_type;
+
+    const listing = await pool.query(
+      `UPDATE food_listings
+       SET title = COALESCE($1, title),
+           description = COALESCE($2, description),
+           quantity = COALESCE($3, quantity),
+           food_category = COALESCE($4, food_category),
+           prepared_at = COALESCE($5, prepared_at),
+           expires_at = COALESCE($6, expires_at),
+           pickup_address = COALESCE($7, pickup_address),
+           city = COALESCE($8, city),
+           listing_type = COALESCE($9, listing_type),
+           unit_price = $10,
+           storage_conditions = COALESCE($11, storage_conditions),
+           safety_score = $12,
+           safety_score_numeric = $13,
+           latitude = COALESCE($14, latitude),
+           longitude = COALESCE($15, longitude)
+       WHERE id = $16 AND donor_id = $17
+       RETURNING *`,
+      [
+        title,
+        description,
+        quantity,
+        food_category,
+        prepared_at,
+        expires_at,
+        pickup_address,
+        city,
+        listing_type,
+        nextListingType === "sale" ? Number(unit_price ?? current.rows[0].unit_price ?? 0) : 0,
+        storage_conditions,
+        safety.score,
+        safety.numericScore,
+        latitude,
+        longitude,
+        req.params.id,
+        req.user.id,
+      ],
+    );
+
+    await pool.query(
+      `INSERT INTO food_safety_logs (listing_id, safety_score, safety_score_numeric, hours_remaining)
+       VALUES ($1, $2, $3, $4)`,
+      [listing.rows[0].id, safety.score, safety.numericScore, safety.hoursRemaining],
+    );
+
+    await pool.query(
+      `INSERT INTO audit_logs (actor_id, action, entity_type, entity_id)
+       VALUES ($1, 'listing.update', 'food_listing', $2)`,
+      [req.user.id, listing.rows[0].id],
+    );
+
+    res.status(200).json({ message: "Listing updated", listing: { ...listing.rows[0], live_safety: safety } });
   } catch (error) {
     console.error("Update listing error:", error);
     res.status(500).json({ message: "Server error" });

@@ -51,7 +51,8 @@ export const getStats = async (req, res) => {
 export const getAllUsers = async (req, res) => {
     try {
         const users = await pool.query(
-            `SELECT id, full_name, email, role, organization_name, phone, city, is_active, created_at
+            `SELECT id, full_name, email, role, organization_name, phone, city, is_active,
+                    verification_status, verified_at, created_at
              FROM users WHERE role != 'admin'
              ORDER BY created_at DESC`
         );
@@ -78,6 +79,40 @@ export const toggleUserStatus = async (req, res) => {
         });
     } catch (error) {
         console.error('Toggle user error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const updateUserVerification = async (req, res) => {
+    const { status } = req.body;
+
+    if (!['pending', 'verified', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid verification status' });
+    }
+
+    try {
+        const user = await pool.query(
+            `UPDATE users
+             SET verification_status = $1,
+                 verified_at = CASE WHEN $1 = 'verified' THEN NOW() ELSE NULL END
+             WHERE id = $2 AND role != 'admin'
+             RETURNING id, full_name, email, role, verification_status, verified_at`,
+            [status, req.params.id]
+        );
+
+        if (user.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        await pool.query(
+            `INSERT INTO audit_logs (actor_id, action, entity_type, entity_id, details)
+             VALUES ($1, 'user.verify', 'user', $2, $3)`,
+            [req.user.id, req.params.id, JSON.stringify({ status })]
+        );
+
+        res.status(200).json({ message: `User marked ${status}`, user: user.rows[0] });
+    } catch (error) {
+        console.error('Verify user error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -137,6 +172,9 @@ export const deleteUser = async (req, res) => {
 
         await client.query(`DELETE FROM food_listings WHERE donor_id = $1`, [userId]);
 
+        await client.query(`DELETE FROM business_profiles WHERE user_id = $1`, [userId]);
+        await client.query(`DELETE FROM charity_profiles WHERE user_id = $1`, [userId]);
+
         const deleted = await client.query(
             `DELETE FROM users WHERE id = $1 AND role != 'admin' RETURNING id, full_name, email`,
             [userId]
@@ -154,6 +192,41 @@ export const deleteUser = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     } finally {
         client.release();
+    }
+};
+
+export const getAllTransactions = async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT t.*, fl.title, fl.city, fl.food_category,
+                    seller.organization_name AS seller_org, seller.full_name AS seller_name,
+                    buyer.organization_name AS buyer_org, buyer.full_name AS buyer_name
+             FROM transactions t
+             JOIN food_listings fl ON fl.id = t.listing_id
+             JOIN users seller ON seller.id = t.seller_id
+             JOIN users buyer ON buyer.id = t.buyer_id
+             ORDER BY t.created_at DESC`
+        );
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Get transactions error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const getAuditLogs = async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT al.*, u.email AS actor_email, u.full_name AS actor_name
+             FROM audit_logs al
+             LEFT JOIN users u ON u.id = al.actor_id
+             ORDER BY al.created_at DESC
+             LIMIT 100`
+        );
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error('Get audit logs error:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
