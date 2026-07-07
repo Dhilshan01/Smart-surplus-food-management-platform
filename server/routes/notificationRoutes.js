@@ -6,12 +6,13 @@ import {
     markAllAsRead
 } from '../controllers/notificationController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { requireVerified } from '../middleware/roleMiddleware.js';
 
 const router = express.Router();
 
-router.get('/', protect, getMyNotifications);
-router.get('/unread-count', protect, getUnreadCount);
-router.patch('/:id/read', protect, markAsRead);
-router.patch('/mark-all-read', protect, markAllAsRead);
+router.get('/', protect, requireVerified, getMyNotifications);
+router.get('/unread-count', protect, requireVerified, getUnreadCount);
+router.patch('/:id/read', protect, requireVerified, markAsRead);
+router.patch('/mark-all-read', protect, requireVerified, markAllAsRead);
 
 export default router;
