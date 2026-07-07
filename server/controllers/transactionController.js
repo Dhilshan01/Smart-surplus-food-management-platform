@@ -55,7 +55,8 @@ export const createTransaction = async (req, res) => {
 export const getMyPurchases = async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT t.*, fl.title, fl.city, fl.food_category, u.organization_name as seller_org
+            `SELECT t.*, fl.title, fl.city, fl.food_category,
+                    u.organization_name as seller_org, u.full_name as seller_name
              FROM transactions t
              JOIN food_listings fl ON t.listing_id = fl.id
              JOIN users u ON t.seller_id = u.id
@@ -73,7 +74,8 @@ export const getMyPurchases = async (req, res) => {
 export const getMySales = async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT t.*, fl.title, fl.city, fl.food_category, u.organization_name as buyer_org
+            `SELECT t.*, fl.title, fl.city, fl.food_category,
+                    u.organization_name as buyer_org, u.full_name as buyer_name
              FROM transactions t
              JOIN food_listings fl ON t.listing_id = fl.id
              JOIN users u ON t.buyer_id = u.id

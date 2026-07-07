@@ -11,6 +11,8 @@ import CreateListing from "./pages/donor/CreateListing";
 import Marketplace from "./pages/business/Marketplace";
 import CharityDashboard from "./pages/charity/CharityDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminListings from "./pages/admin/AdminListings";
+import AdminComplaints from "./pages/admin/AdminComplaints";
 
 const Unauthorized = () => (
   <div className="p-8 text-2xl font-bold text-red-600">Unauthorized Access</div>
@@ -61,6 +63,16 @@ function App() {
           <Route path="/admin/dashboard" element={
             <ProtectedRoute roles={["admin"]}>
               <DashboardLayout><AdminDashboard /></DashboardLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/listings" element={
+            <ProtectedRoute roles={["admin"]}>
+              <DashboardLayout><AdminListings /></DashboardLayout>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/complaints" element={
+            <ProtectedRoute roles={["admin"]}>
+              <DashboardLayout><AdminComplaints /></DashboardLayout>
             </ProtectedRoute>
           } />
         </Routes>

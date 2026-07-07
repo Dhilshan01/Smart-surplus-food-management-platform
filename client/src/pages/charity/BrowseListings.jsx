@@ -162,7 +162,7 @@ const BrowseListings = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredListings.map((listing) => (
               <div key={listing.id} className="relative">
-                <ListingCard listing={listing} showActions={true} onClaim={handleClaim} />
+                <ListingCard listing={listing} showActions={true} onClaim={handleClaim} allowReport />
                 {claimingId === listing.id && <div className="absolute inset-0 grid place-items-center rounded-lg bg-white/80 font-bold">Claiming...</div>}
                 {successId === listing.id && <div className="absolute inset-0 grid place-items-center rounded-lg bg-green-600/90 font-bold text-white">Claimed successfully</div>}
               </div>

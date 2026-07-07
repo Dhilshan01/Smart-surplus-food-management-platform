@@ -17,11 +17,6 @@ const roles = [
     description: "Browse safe donation listings, claim food, and manage collection status from one workspace.",
     items: ["Find donations", "Claim food", "Track collections", "Prioritize urgent listings"],
   },
-  {
-    title: "System administrators",
-    description: "Monitor users, listings, claims, safety risk, and platform activity across the system.",
-    items: ["Manage users", "Monitor listings", "Review claims", "View platform metrics"],
-  },
 ];
 
 const workflow = [
@@ -80,17 +75,18 @@ const safetyLevels = [
 const Landing = () => {
   return (
     <div className="min-h-screen bg-white text-slate-950">
-      <section className="relative overflow-hidden border-b border-slate-200 bg-slate-950">
-        <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(#ffffff_1px,transparent_1px),linear-gradient(90deg,#ffffff_1px,transparent_1px)] [background-size:44px_44px]" />
+      <section className="relative overflow-hidden border-b border-emerald-100 bg-[#eef7ec]">
+        <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(#8bcfa7_1px,transparent_1px),linear-gradient(90deg,#8bcfa7_1px,transparent_1px)] [background-size:48px_48px]" />
+        <div className="pointer-events-none absolute inset-0 bg-white/45" />
         <div className="mx-auto grid min-h-[calc(100vh-65px)] max-w-7xl items-center gap-10 px-4 py-16 lg:grid-cols-[1fr_420px]">
           <div className="relative max-w-3xl">
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-300">
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">
               Smart surplus food management platform
             </p>
-            <h1 className="animate-fade-up mt-5 text-5xl font-black tracking-tight text-white sm:text-6xl">
+            <h1 className="animate-fade-up mt-5 text-5xl font-black tracking-tight text-slate-950 sm:text-6xl">
               FoodFlow
             </h1>
-            <p className="animate-fade-up animate-delay-100 mt-5 max-w-2xl text-lg leading-relaxed text-slate-200">
+            <p className="animate-fade-up animate-delay-100 mt-5 max-w-2xl text-lg leading-relaxed text-slate-700">
               A web platform that helps businesses redistribute surplus food through B2B sales,
               charity donations, expiry tracking, food safety scoring, and waste analytics.
             </p>
@@ -103,7 +99,7 @@ const Landing = () => {
               </Link>
               <Link
                 to="/login"
-                className="interactive-lift inline-flex justify-center rounded-lg border border-white/25 bg-white/10 px-5 py-3 text-sm font-black text-white backdrop-blur transition hover:bg-white/20"
+                className="interactive-lift inline-flex justify-center rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-black text-slate-800 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
               >
                 Sign in
               </Link>
@@ -168,7 +164,7 @@ const Landing = () => {
             </h2>
           </div>
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-3">
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
             {roles.map((role) => (
               <article key={role.title} className="interactive-lift rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                 <h3 className="text-base font-black text-slate-950">{role.title}</h3>

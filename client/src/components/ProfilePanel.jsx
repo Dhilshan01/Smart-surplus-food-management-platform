@@ -24,6 +24,7 @@ const ProfilePanel = ({ compact = false }) => {
 
   useEffect(() => {
     const profile = user?.role === "donor" ? user?.business_profile : user?.charity_profile;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFormData({
       full_name: user?.full_name || "",
       organization_name: user?.organization_name || "",

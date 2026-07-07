@@ -31,6 +31,7 @@ const DonorDashboard = () => {
   const [sales, setSales] = useState([]);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [transactionError, setTransactionError] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
 
   const fetchListings = useCallback(async () => {
@@ -47,6 +48,7 @@ const DonorDashboard = () => {
   }, [token]);
 
   const fetchPurchases = useCallback(async () => {
+    setTransactionError("");
     try {
       const res = await axios.get("http://localhost:5000/api/transactions/my-purchases", {
         headers: { Authorization: `Bearer ${token}` },
@@ -54,10 +56,12 @@ const DonorDashboard = () => {
       setPurchases(res.data);
     } catch (error) {
       console.error(error);
+      setTransactionError(error.response?.data?.message || "Could not load purchases.");
     }
   }, [token]);
 
   const fetchSales = useCallback(async () => {
+    setTransactionError("");
     try {
       const res = await axios.get("http://localhost:5000/api/transactions/my-sales", {
         headers: { Authorization: `Bearer ${token}` },
@@ -65,6 +69,7 @@ const DonorDashboard = () => {
       setSales(res.data);
     } catch (error) {
       console.error(error);
+      setTransactionError(error.response?.data?.message || "Could not load sales.");
     }
   }, [token]);
 
@@ -173,7 +178,7 @@ const DonorDashboard = () => {
                 <p className="mt-1 text-sm text-slate-500">
                   {isPurchase ? "Supplier" : "Buyer"}:{" "}
                   <span className="font-semibold text-slate-700">
-                    {isPurchase ? item.seller_org : item.buyer_org}
+                    {isPurchase ? item.seller_org || item.seller_name || "Supplier" : item.buyer_org || item.buyer_name || "Buyer"}
                   </span>{" "}
                   / {item.city}
                 </p>
@@ -320,9 +325,17 @@ const DonorDashboard = () => {
             <h2 className="text-lg font-black text-slate-950">Purchase history</h2>
             <p className="mt-1 text-sm text-slate-500">Track marketplace stock you have reserved or collected.</p>
           </div>
+          {transactionError && (
+            <div className="mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+              {transactionError}
+            </div>
+          )}
           {purchases.length === 0 ? (
             <div className="rounded-lg border border-slate-200 bg-white py-20 text-center shadow-sm">
               <p className="text-base font-black text-slate-950">No purchases yet</p>
+              <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+                Purchases appear here after you buy sale listings from another donor or business account.
+              </p>
               <Link
                 to="/donor/marketplace"
                 className="mt-5 inline-flex rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-700"
@@ -342,6 +355,11 @@ const DonorDashboard = () => {
             <h2 className="text-lg font-black text-slate-950">Sales history</h2>
             <p className="mt-1 text-sm text-slate-500">Monitor B2B surplus revenue and collection status.</p>
           </div>
+          {transactionError && (
+            <div className="mb-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+              {transactionError}
+            </div>
+          )}
           {sales.length === 0 ? (
             <div className="rounded-lg border border-slate-200 bg-white py-20 text-center shadow-sm">
               <p className="text-base font-black text-slate-950">No sales yet</p>

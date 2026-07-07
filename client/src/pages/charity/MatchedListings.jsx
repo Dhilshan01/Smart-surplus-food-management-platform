@@ -65,7 +65,7 @@ const MatchedListings = () => {
             }`}>
               {listing.match_score}% match
             </div>
-            <ListingCard listing={listing} showActions onClaim={claim} />
+            <ListingCard listing={listing} showActions onClaim={claim} allowReport />
             <div className="-mt-4 flex flex-wrap gap-1 rounded-b-lg border border-t-0 border-slate-200 bg-white px-4 pb-4">
               {listing.match_reasons.map((reason) => (
                 <span key={reason} className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">

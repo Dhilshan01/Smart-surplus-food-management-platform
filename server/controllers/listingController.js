@@ -7,7 +7,7 @@ export const createListing = async (req, res) => {
     const { 
         title, description, quantity, food_category, prepared_at, expires_at, 
         pickup_address, city, listing_type, unit_price, storage_conditions,
-        latitude, longitude
+        image_url, latitude, longitude
     } = req.body;
     const donor_id = req.user.id;
 
@@ -21,6 +21,12 @@ export const createListing = async (req, res) => {
         if (new Date(expires_at) <= new Date(prepared_at)) {
             return res.status(400).json({ message: 'Expiry time must be after preparation time' });
         }
+        if (image_url && typeof image_url !== 'string') {
+            return res.status(400).json({ message: 'Food image must be a valid image value' });
+        }
+        if (image_url && image_url.length > 5_000_000) {
+            return res.status(400).json({ message: 'Food image is too large. Use an image under 3 MB.' });
+        }
 
         const safety = calculateSafetyScore(prepared_at, expires_at, storage_conditions);
 
@@ -28,12 +34,12 @@ export const createListing = async (req, res) => {
             `INSERT INTO food_listings 
             (donor_id, title, description, quantity, food_category, prepared_at, expires_at, 
              pickup_address, city, safety_score, listing_type, unit_price, storage_conditions,
-             safety_score_numeric, latitude, longitude)
-            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
+             safety_score_numeric, image_url, latitude, longitude)
+            VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) RETURNING *`,
             [donor_id, title, description, quantity, food_category, prepared_at, expires_at, 
              pickup_address, city, safety.score, listing_type || 'donation', 
              listing_type === 'sale' ? unit_price : 0, storage_conditions || 'room_temperature',
-             safety.numericScore, latitude || null, longitude || null]
+             safety.numericScore, image_url || null, latitude || null, longitude || null]
         );
 
         await pool.query(
@@ -226,7 +232,7 @@ export const getListingById = async (req, res) => {
 export const updateListingStatus = async (req, res) => {
   const { status } = req.body;
 
-  if (!["available", "claimed", "collected", "expired"].includes(status)) {
+  if (!["available", "claimed", "collected", "expired", "flagged"].includes(status)) {
     return res.status(400).json({ message: "Invalid listing status" });
   }
 
@@ -264,6 +270,7 @@ export const updateListing = async (req, res) => {
     listing_type,
     unit_price,
     storage_conditions,
+    image_url,
     latitude,
     longitude,
   } = req.body;
@@ -291,6 +298,12 @@ export const updateListing = async (req, res) => {
     if (new Date(nextExpiresAt) <= new Date(nextPreparedAt)) {
       return res.status(400).json({ message: "Expiry time must be after preparation time" });
     }
+    if (image_url && typeof image_url !== "string") {
+      return res.status(400).json({ message: "Food image must be a valid image value" });
+    }
+    if (image_url && image_url.length > 5_000_000) {
+      return res.status(400).json({ message: "Food image is too large. Use an image under 3 MB." });
+    }
     const safety = calculateSafetyScore(nextPreparedAt, nextExpiresAt, nextStorage);
     const nextListingType = listing_type || current.rows[0].listing_type;
 
@@ -309,9 +322,10 @@ export const updateListing = async (req, res) => {
            storage_conditions = COALESCE($11, storage_conditions),
            safety_score = $12,
            safety_score_numeric = $13,
-           latitude = COALESCE($14, latitude),
-           longitude = COALESCE($15, longitude)
-       WHERE id = $16 AND donor_id = $17
+           image_url = $14,
+           latitude = COALESCE($15, latitude),
+           longitude = COALESCE($16, longitude)
+       WHERE id = $17 AND donor_id = $18
        RETURNING *`,
       [
         title,
@@ -327,6 +341,7 @@ export const updateListing = async (req, res) => {
         storage_conditions,
         safety.score,
         safety.numericScore,
+        image_url ?? current.rows[0].image_url ?? null,
         latitude,
         longitude,
         req.params.id,

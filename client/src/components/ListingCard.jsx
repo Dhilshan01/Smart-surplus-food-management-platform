@@ -1,3 +1,5 @@
+import ReportListingButton from "./ReportListingButton";
+
 const safetyConfig = {
   safe: {
     label: "Safe",
@@ -21,25 +23,39 @@ const statusConfig = {
   claimed: "border-blue-200 bg-blue-50 text-blue-700",
   collected: "border-slate-200 bg-slate-50 text-slate-700",
   expired: "border-red-200 bg-red-50 text-red-700",
+  flagged: "border-amber-200 bg-amber-50 text-amber-700",
 };
 
-const ListingCard = ({ listing, showActions, onClaim, onEdit, onDelete }) => {
+const ListingCard = ({ listing, showActions, onClaim, onEdit, onDelete, allowReport = false, onReported }) => {
   const safety = safetyConfig[listing.live_safety?.score || listing.safety_score] || safetyConfig.safe;
   const status = statusConfig[listing.status] || statusConfig.available;
+  const primaryBadge =
+    listing.status === "collected"
+      ? { label: "Collected", className: status }
+      : listing.status === "claimed"
+        ? { label: "Claimed", className: status }
+        : listing.status === "expired"
+          ? { label: "Expired", className: status }
+          : listing.status === "flagged"
+            ? { label: "Flagged", className: status }
+            : { label: safety.label, className: safety.className };
   const expiresAt = new Date(listing.expires_at);
   const hoursLeft = listing.live_safety?.hoursRemaining;
 
   return (
     <article className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:border-emerald-200 hover:shadow-md">
       <div className={`h-1.5 ${safety.bar}`} />
+      {listing.image_url && (
+        <img src={listing.image_url} alt={listing.title} className="aspect-[4/3] w-full object-cover" />
+      )}
       <div className="p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="truncate text-base font-black text-slate-950">{listing.title}</h3>
             <p className="mt-1 text-xs font-semibold text-slate-500">{listing.food_category}</p>
           </div>
-          <span className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-black ${safety.className}`}>
-            {safety.label}
+          <span className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-black ${primaryBadge.className}`}>
+            {primaryBadge.label}
           </span>
         </div>
 
@@ -80,8 +96,8 @@ const ListingCard = ({ listing, showActions, onClaim, onEdit, onDelete }) => {
           </div>
         )}
 
-        {showActions && (onClaim || onEdit || onDelete) && (
-          <div className="mt-4 flex gap-2">
+        {showActions && (onClaim || onEdit || onDelete || allowReport) && (
+          <div className="mt-4 flex flex-wrap gap-2">
             {onClaim && (
               <button
                 type="button"
@@ -108,6 +124,13 @@ const ListingCard = ({ listing, showActions, onClaim, onEdit, onDelete }) => {
               >
                 Delete
               </button>
+            )}
+            {allowReport && (
+              <ReportListingButton
+                listingId={listing.id}
+                listingTitle={listing.title}
+                onReported={onReported}
+              />
             )}
           </div>
         )}

@@ -109,6 +109,7 @@ const CreateListing = () => {
     listing_type: "donation",
     unit_price: "",
     storage_conditions: "room_temperature",
+    image_url: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -145,6 +146,7 @@ const CreateListing = () => {
         listing_type: listing.listing_type || "donation",
         unit_price: listing.unit_price || "",
         storage_conditions: listing.storage_conditions || "room_temperature",
+        image_url: listing.image_url || "",
       });
     } catch (err) {
       setError(err.response?.data?.message || "Could not load listing");
@@ -154,6 +156,7 @@ const CreateListing = () => {
   }, [id, isEditing, token]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadListing();
   }, [loadListing]);
 
@@ -167,6 +170,29 @@ const CreateListing = () => {
       listing_type: listingType,
       unit_price: listingType === "donation" ? "" : formData.unit_price,
     });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please choose a valid image file.");
+      return;
+    }
+
+    if (file.size > 3 * 1024 * 1024) {
+      setError("Food image must be under 3 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setFormData((current) => ({ ...current, image_url: reader.result }));
+      setError("");
+    };
+    reader.onerror = () => setError("Could not read the selected image.");
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e) => {
@@ -335,6 +361,41 @@ const CreateListing = () => {
                   <option value="frozen">Frozen</option>
                 </select>
               </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-slate-600">Food photo</label>
+                <div className="grid gap-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 sm:grid-cols-[160px_minmax(0,1fr)]">
+                  <div className="aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-white">
+                    {formData.image_url ? (
+                      <img src={formData.image_url} alt="Food preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center px-3 text-center text-xs font-semibold text-slate-400">
+                        No photo selected
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col justify-center gap-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-600 file:px-3 file:py-2 file:text-sm file:font-bold file:text-white hover:file:bg-emerald-700"
+                    />
+                    <p className="text-xs leading-relaxed text-slate-500">
+                      Add a clear photo so charities and buyers can inspect the food before requesting it.
+                    </p>
+                    {formData.image_url && (
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, image_url: "" })}
+                        className="self-start rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                      >
+                        Remove photo
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -433,6 +494,9 @@ const CreateListing = () => {
           <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-sm font-black text-slate-950">Listing preview</h2>
             <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              {formData.image_url && (
+                <img src={formData.image_url} alt="Food preview" className="mb-4 aspect-[4/3] w-full rounded-lg object-cover" />
+              )}
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-black text-slate-950">{formData.title || "Untitled food item"}</p>

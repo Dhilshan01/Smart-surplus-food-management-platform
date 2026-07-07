@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import ReportListingButton from "../../components/ReportListingButton";
 
 const safetyConfig = {
   safe: { label: "Safe", className: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -163,7 +164,9 @@ const Marketplace = () => {
           ) : listings.length === 0 ? (
             <div className="rounded-lg border border-slate-200 bg-white py-20 text-center shadow-sm">
               <p className="text-base font-black text-slate-950">No sale listings found</p>
-              <p className="mt-1 text-sm text-slate-500">Try changing filters or check back when businesses post surplus stock.</p>
+              <p className="mx-auto mt-1 max-w-md text-sm text-slate-500">
+                You can only purchase sale listings posted by other donors or businesses. Your own sale listings are hidden here.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -191,7 +194,7 @@ const Marketplace = () => {
                       </div>
                     </div>
 
-                    <div className="grid gap-4 p-5 sm:grid-cols-[1fr_auto]">
+                    <div className="p-5">
                       <dl className="grid grid-cols-2 gap-3 text-sm">
                         <div>
                           <dt className="text-xs font-semibold text-slate-500">Quantity</dt>
@@ -210,26 +213,34 @@ const Marketplace = () => {
                           <dd className="mt-1 font-bold text-slate-900">{new Date(listing.expires_at).toLocaleString()}</dd>
                         </div>
                       </dl>
+                    </div>
+                    <div className="flex flex-col gap-4 border-t border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-slate-500">Supplier</p>
+                        <p className="mt-1 truncate text-sm font-black text-slate-900">
+                          {listing.organization_name || listing.donor_name || "Business"}
+                        </p>
+                      </div>
 
-                      <div className="flex flex-col justify-between rounded-lg bg-slate-50 p-4 sm:w-40">
-                        <div>
+                      <div className="flex flex-col gap-3 rounded-lg bg-slate-50 p-3 sm:min-w-[340px] sm:flex-row sm:items-center sm:justify-between">
+                        <div className="shrink-0">
                           <p className="text-xs font-semibold text-slate-500">Total price</p>
-                          <p className="mt-1 text-2xl font-black text-emerald-700">
+                          <p className="mt-0.5 text-xl font-black text-emerald-700">
                             Rs {Number(listing.unit_price || 0).toFixed(2)}
                           </p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => handlePurchase(listing.id, listing.quantity)}
-                          disabled={purchasingId === listing.id}
-                          className="mt-4 rounded-lg bg-slate-950 px-3 py-2 text-sm font-black text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {purchasingId === listing.id ? "Processing" : "Purchase"}
-                        </button>
+                        <div className="grid gap-2 sm:w-40">
+                          <button
+                            type="button"
+                            onClick={() => handlePurchase(listing.id, listing.quantity)}
+                            disabled={purchasingId === listing.id}
+                            className="rounded-lg bg-slate-950 px-3 py-2 text-sm font-black text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {purchasingId === listing.id ? "Processing" : "Purchase"}
+                          </button>
+                          <ReportListingButton listingId={listing.id} listingTitle={listing.title} compact />
+                        </div>
                       </div>
-                    </div>
-                    <div className="border-t border-slate-100 px-5 py-3 text-xs font-semibold text-slate-500">
-                      Supplier: {listing.organization_name || listing.donor_name || "Business"}
                     </div>
                   </article>
                 );

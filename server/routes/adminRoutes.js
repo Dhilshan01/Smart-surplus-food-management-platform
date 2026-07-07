@@ -11,7 +11,9 @@ import {
     updateUserVerification,
     getAllTransactions,
     getAuditLogs,
-    downloadPlatformReport
+    downloadPlatformReport,
+    getAllComplaints,
+    updateComplaint
 } from '../controllers/adminController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authorizeRoles } from '../middleware/roleMiddleware.js';
@@ -30,6 +32,8 @@ router.delete('/listings/:id', deleteAnyListing);
 router.get('/claims', getAllClaims);
 router.get('/transactions', getAllTransactions);
 router.get('/audit-logs', getAuditLogs);
+router.get('/complaints', getAllComplaints);
+router.patch('/complaints/:id', updateComplaint);
 router.get('/analytics', getPlatformAnalytics);
 router.get('/reports/platform', downloadPlatformReport);
 

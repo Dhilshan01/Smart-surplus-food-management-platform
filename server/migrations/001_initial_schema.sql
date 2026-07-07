@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS food_listings (
  prepared_at TIMESTAMPTZ NOT NULL, expires_at TIMESTAMPTZ NOT NULL, pickup_address TEXT, city TEXT,
  status TEXT DEFAULT 'available', safety_score TEXT, safety_score_numeric INT CHECK(safety_score_numeric BETWEEN 0 AND 100),
  listing_type TEXT DEFAULT 'donation' CHECK(listing_type IN ('sale','donation')),
- unit_price NUMERIC(12,2) DEFAULT 0, storage_conditions TEXT, latitude NUMERIC, longitude NUMERIC,
+ unit_price NUMERIC(12,2) DEFAULT 0, storage_conditions TEXT, image_url TEXT, latitude NUMERIC, longitude NUMERIC,
  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE TABLE IF NOT EXISTS claims (

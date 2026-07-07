@@ -245,6 +245,91 @@ export const getAuditLogs = async (req, res) => {
     }
 };
 
+export const getAllComplaints = async (req, res) => {
+    try {
+        const complaints = await pool.query(
+            `SELECT c.*, fl.title, fl.status AS listing_status, fl.city, fl.food_category,
+                    reporter.full_name AS reporter_name, reporter.email AS reporter_email,
+                    donor.id AS donor_id, donor.full_name AS donor_name, donor.organization_name AS donor_org
+             FROM complaints c
+             JOIN food_listings fl ON fl.id = c.listing_id
+             LEFT JOIN users reporter ON reporter.id = c.reporter_id
+             JOIN users donor ON donor.id = fl.donor_id
+             ORDER BY
+               CASE c.status WHEN 'pending' THEN 1 WHEN 'reviewing' THEN 2 WHEN 'resolved' THEN 3 ELSE 4 END,
+               c.created_at DESC`
+        );
+        res.status(200).json(complaints.rows);
+    } catch (error) {
+        console.error('Get complaints error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const updateComplaint = async (req, res) => {
+    const { status, admin_note, action } = req.body;
+
+    if (status && !['pending', 'reviewing', 'resolved', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: 'Invalid complaint status' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const current = await client.query(
+            `SELECT c.*, fl.donor_id
+             FROM complaints c
+             JOIN food_listings fl ON fl.id = c.listing_id
+             WHERE c.id = $1`,
+            [req.params.id]
+        );
+
+        if (current.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ message: 'Complaint not found' });
+        }
+
+        const nextStatus = status || current.rows[0].status;
+        const updated = await client.query(
+            `UPDATE complaints
+             SET status = $1,
+                 admin_note = $2,
+                 resolved_at = CASE WHEN $1 IN ('resolved', 'rejected') THEN NOW() ELSE NULL END
+             WHERE id = $3
+             RETURNING *`,
+            [nextStatus, admin_note ?? current.rows[0].admin_note, req.params.id]
+        );
+
+        if (action === 'hide_listing') {
+            await client.query(`UPDATE food_listings SET status = 'flagged' WHERE id = $1`, [current.rows[0].listing_id]);
+        }
+
+        if (action === 'restore_listing') {
+            await client.query(`UPDATE food_listings SET status = 'available' WHERE id = $1 AND status = 'flagged'`, [current.rows[0].listing_id]);
+        }
+
+        if (action === 'deactivate_poster') {
+            await client.query(`UPDATE users SET is_active = false WHERE id = $1`, [current.rows[0].donor_id]);
+        }
+
+        await client.query(
+            `INSERT INTO audit_logs (actor_id, action, entity_type, entity_id, details)
+             VALUES ($1, 'complaint.update', 'complaint', $2, $3)`,
+            [req.user.id, req.params.id, JSON.stringify({ status: nextStatus, action: action || null })]
+        );
+
+        await client.query('COMMIT');
+        res.status(200).json({ message: 'Complaint updated', complaint: updated.rows[0] });
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Update complaint error:', error);
+        res.status(500).json({ message: 'Server error' });
+    } finally {
+        client.release();
+    }
+};
+
 // GET ALL LISTINGS
 export const getAllListings = async (req, res) => {
     try {

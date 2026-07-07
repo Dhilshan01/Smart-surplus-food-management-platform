@@ -18,7 +18,11 @@ const navByRole = {
     { label: "Create Listing", to: "/donor/create-listing" },
   ],
   charity: [{ label: "Food Network", to: "/charity/dashboard" }],
-  admin: [{ label: "Command Center", to: "/admin/dashboard" }],
+  admin: [
+    { label: "Command Center", to: "/admin/dashboard" },
+    { label: "All Listings", to: "/admin/listings" },
+    { label: "Complaints", to: "/admin/complaints" },
+  ],
 };
 
 const DashboardLayout = ({ children }) => {
@@ -45,8 +49,9 @@ const DashboardLayout = ({ children }) => {
     navigate("/");
   };
 
-  const togglePasswordPanel = () => {
-    setPasswordOpen((current) => !current);
+  const openPasswordPanel = () => {
+    setProfileOpen(false);
+    setPasswordOpen(true);
   };
 
   return (
@@ -100,16 +105,11 @@ const DashboardLayout = ({ children }) => {
           </button>
           <button
             type="button"
-            onClick={togglePasswordPanel}
+            onClick={openPasswordPanel}
             className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
           >
             Change password
           </button>
-          {passwordOpen && (
-            <div className="mt-3 rounded-lg bg-slate-50 p-3">
-              <ChangePasswordPanel compact />
-            </div>
-          )}
         </div>
       </aside>
 
@@ -161,19 +161,13 @@ const DashboardLayout = ({ children }) => {
               </button>
               <button
                 type="button"
-                onClick={togglePasswordPanel}
+                onClick={openPasswordPanel}
                 className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 lg:hidden"
               >
                 Password
               </button>
             </div>
           </div>
-
-          {passwordOpen && (
-            <div className="border-t border-slate-100 bg-white px-4 py-4 lg:hidden">
-              <ChangePasswordPanel compact />
-            </div>
-          )}
 
           <nav className="flex gap-1 overflow-x-auto border-t border-slate-100 px-4 py-2 lg:hidden">
             {navItems.map((item) => {
@@ -195,6 +189,28 @@ const DashboardLayout = ({ children }) => {
 
         <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
+
+      {passwordOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">Account security</p>
+                <h2 className="text-lg font-black text-slate-950">Change password</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPasswordOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-lg font-bold text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                aria-label="Close change password"
+              >
+                x
+              </button>
+            </div>
+            <ChangePasswordPanel compact />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
