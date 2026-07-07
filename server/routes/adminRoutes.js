@@ -10,7 +10,8 @@ import {
     getPlatformAnalytics,
     updateUserVerification,
     getAllTransactions,
-    getAuditLogs
+    getAuditLogs,
+    downloadPlatformReport
 } from '../controllers/adminController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authorizeRoles } from '../middleware/roleMiddleware.js';
@@ -30,5 +31,6 @@ router.get('/claims', getAllClaims);
 router.get('/transactions', getAllTransactions);
 router.get('/audit-logs', getAuditLogs);
 router.get('/analytics', getPlatformAnalytics);
+router.get('/reports/platform', downloadPlatformReport);
 
 export default router;

@@ -52,6 +52,25 @@ const AnalyticsDashboard = () => {
     return Math.max(...analytics.categoryBreakdown.map((c) => Number(c.total || 0)), 1);
   }, [analytics]);
 
+  const downloadReport = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/analytics/business/report", {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: "text/csv" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "business-report.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert(error.response?.data?.message || "Could not download report");
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-20 text-gray-400">Loading analytics...</div>;
   }
@@ -77,11 +96,20 @@ const AnalyticsDashboard = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-xl font-bold text-gray-900">Waste Analytics</h2>
-        <p className="text-gray-400 text-sm mt-1">
-          Track redistribution, sales recovery, and waste reduction patterns.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Waste Analytics</h2>
+          <p className="text-gray-400 text-sm mt-1">
+            Track redistribution, sales recovery, and waste reduction patterns.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={downloadReport}
+          className="rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-emerald-700"
+        >
+          Download CSV
+        </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">

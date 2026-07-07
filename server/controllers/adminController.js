@@ -1,5 +1,20 @@
 import pool from '../config/db.js';
 
+const csvValue = (value) => {
+    if (value === null || value === undefined) return '';
+    const text = String(value);
+    return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+};
+
+const toCsv = (sections) => sections
+    .flatMap(({ title, rows }) => [
+        [title],
+        ...rows,
+        []
+    ])
+    .map((row) => row.map(csvValue).join(','))
+    .join('\n');
+
 // GET PLATFORM STATS
 export const getStats = async (req, res) => {
     try {
@@ -341,6 +356,174 @@ export const getPlatformAnalytics = async (req, res) => {
         });
     } catch (error) {
         console.error('Get platform analytics error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+export const downloadPlatformReport = async (req, res) => {
+    try {
+        const [users, listings, outcomes, monthly, categories, transactions, topDonors, topCharities] = await Promise.all([
+            pool.query(
+                `SELECT COUNT(*) FILTER (WHERE role = 'donor')::int AS donors,
+                        COUNT(*) FILTER (WHERE role = 'charity')::int AS charities,
+                        COUNT(*) FILTER (WHERE verification_status = 'pending')::int AS pending,
+                        COUNT(*) FILTER (WHERE verification_status = 'verified')::int AS verified,
+                        COUNT(*) FILTER (WHERE verification_status = 'rejected')::int AS rejected
+                 FROM users
+                 WHERE role != 'admin'`
+            ),
+            pool.query(
+                `SELECT COUNT(*)::int AS total,
+                        COUNT(*) FILTER (WHERE status = 'available')::int AS available,
+                        COUNT(*) FILTER (WHERE status = 'claimed')::int AS claimed,
+                        COUNT(*) FILTER (WHERE status = 'collected')::int AS collected,
+                        COUNT(*) FILTER (WHERE status = 'expired')::int AS expired,
+                        COALESCE(ROUND(AVG(safety_score_numeric)), 0)::int AS avg_safety
+                 FROM food_listings`
+            ),
+            pool.query(
+                `SELECT outcome, COUNT(*)::int AS count, COALESCE(SUM(estimated_value), 0)::numeric AS estimated_value
+                 FROM waste_analytics
+                 GROUP BY outcome
+                 ORDER BY outcome`
+            ),
+            pool.query(
+                `SELECT TO_CHAR(DATE_TRUNC('month', created_at), 'Mon YYYY') AS month,
+                        COUNT(*) FILTER (WHERE outcome = 'sold')::int AS sold,
+                        COUNT(*) FILTER (WHERE outcome = 'donated')::int AS donated,
+                        COUNT(*) FILTER (WHERE outcome = 'wasted')::int AS wasted,
+                        COALESCE(SUM(estimated_value), 0)::numeric AS estimated_value
+                 FROM waste_analytics
+                 GROUP BY DATE_TRUNC('month', created_at)
+                 ORDER BY DATE_TRUNC('month', created_at)`
+            ),
+            pool.query(
+                `SELECT COALESCE(food_category, 'Other') AS category,
+                        COUNT(*)::int AS total,
+                        COUNT(*) FILTER (WHERE status = 'collected')::int AS collected,
+                        COUNT(*) FILTER (WHERE status = 'expired')::int AS expired
+                 FROM food_listings
+                 GROUP BY COALESCE(food_category, 'Other')
+                 ORDER BY total DESC, category ASC`
+            ),
+            pool.query(
+                `SELECT t.id, fl.title, COALESCE(seller.organization_name, seller.full_name) AS seller,
+                        COALESCE(buyer.organization_name, buyer.full_name) AS buyer,
+                        t.status, t.total_amount, t.created_at
+                 FROM transactions t
+                 JOIN food_listings fl ON fl.id = t.listing_id
+                 JOIN users seller ON seller.id = t.seller_id
+                 JOIN users buyer ON buyer.id = t.buyer_id
+                 ORDER BY t.created_at DESC`
+            ),
+            pool.query(
+                `SELECT COALESCE(u.organization_name, u.full_name) AS name, COUNT(fl.id)::int AS listings
+                 FROM users u
+                 LEFT JOIN food_listings fl ON fl.donor_id = u.id
+                 WHERE u.role = 'donor'
+                 GROUP BY u.id
+                 ORDER BY listings DESC
+                 LIMIT 10`
+            ),
+            pool.query(
+                `SELECT COALESCE(u.organization_name, u.full_name) AS name, COUNT(c.id)::int AS claims
+                 FROM users u
+                 LEFT JOIN claims c ON c.charity_id = u.id
+                 WHERE u.role = 'charity'
+                 GROUP BY u.id
+                 ORDER BY claims DESC
+                 LIMIT 10`
+            )
+        ]);
+
+        const userSummary = users.rows[0] || {};
+        const listingSummary = listings.rows[0] || {};
+        const sold = outcomes.rows.find((row) => row.outcome === 'sold');
+        const donated = outcomes.rows.find((row) => row.outcome === 'donated');
+        const wasted = outcomes.rows.find((row) => row.outcome === 'wasted');
+        const recoveredValue = outcomes.rows
+            .filter((row) => ['sold', 'donated'].includes(row.outcome))
+            .reduce((sum, row) => sum + Number(row.estimated_value || 0), 0);
+
+        const csv = toCsv([
+            {
+                title: 'Platform Report',
+                rows: [
+                    ['Generated At', new Date().toISOString()],
+                    ['Generated By Admin ID', req.user.id],
+                ],
+            },
+            {
+                title: 'Summary',
+                rows: [
+                    ['Metric', 'Value'],
+                    ['Donors', userSummary.donors],
+                    ['Charities', userSummary.charities],
+                    ['Pending Verification', userSummary.pending],
+                    ['Verified Users', userSummary.verified],
+                    ['Rejected Users', userSummary.rejected],
+                    ['Total Listings', listingSummary.total],
+                    ['Available Listings', listingSummary.available],
+                    ['Claimed Listings', listingSummary.claimed],
+                    ['Collected Listings', listingSummary.collected],
+                    ['Expired/Wasted Listings', listingSummary.expired],
+                    ['Average Safety Score', listingSummary.avg_safety],
+                    ['Sold Outcomes', sold?.count || 0],
+                    ['Donated Outcomes', donated?.count || 0],
+                    ['Wasted Outcomes', wasted?.count || 0],
+                    ['Recovered/Cost Saving Value', recoveredValue],
+                ],
+            },
+            {
+                title: 'Monthly Outcomes',
+                rows: [
+                    ['Month', 'Sold', 'Donated', 'Wasted', 'Estimated Value'],
+                    ...monthly.rows.map((row) => [row.month, row.sold, row.donated, row.wasted, row.estimated_value]),
+                ],
+            },
+            {
+                title: 'Category Waste',
+                rows: [
+                    ['Category', 'Total', 'Collected', 'Expired'],
+                    ...categories.rows.map((row) => [row.category, row.total, row.collected, row.expired]),
+                ],
+            },
+            {
+                title: 'Top Donors',
+                rows: [
+                    ['Name', 'Listings'],
+                    ...topDonors.rows.map((row) => [row.name, row.listings]),
+                ],
+            },
+            {
+                title: 'Top Charities',
+                rows: [
+                    ['Name', 'Claims'],
+                    ...topCharities.rows.map((row) => [row.name, row.claims]),
+                ],
+            },
+            {
+                title: 'Transactions',
+                rows: [
+                    ['ID', 'Food Item', 'Seller', 'Buyer', 'Status', 'Amount', 'Created At'],
+                    ...transactions.rows.map((row) => [
+                        row.id,
+                        row.title,
+                        row.seller,
+                        row.buyer,
+                        row.status,
+                        row.total_amount,
+                        row.created_at?.toISOString?.() || row.created_at,
+                    ]),
+                ],
+            },
+        ]);
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="platform-report.csv"');
+        res.status(200).send(csv);
+    } catch (error) {
+        console.error('Download platform report error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };

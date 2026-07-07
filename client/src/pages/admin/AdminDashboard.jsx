@@ -182,6 +182,25 @@ const AdminDashboard = () => {
     }
   };
 
+  const downloadPlatformReport = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/admin/reports/platform", {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: "text/csv" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "platform-report.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert(error.response?.data?.message || "Could not download report");
+    }
+  };
+
   const tabs = [
     { key: "overview", label: "Overview" },
     { key: "users", label: "Users" },
@@ -230,9 +249,18 @@ const AdminDashboard = () => {
         {activeTab === "analytics" && loading && <div className="py-20 text-center text-gray-400">Loading analytics...</div>}
         {activeTab === "analytics" && analytics && (
           <section className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold">Platform Analytics</h2>
-              <p className="text-sm text-gray-500">Platform-wide redistribution and matching performance.</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Platform Analytics</h2>
+                <p className="text-sm text-gray-500">Platform-wide redistribution and matching performance.</p>
+              </div>
+              <button
+                type="button"
+                onClick={downloadPlatformReport}
+                className="rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-600"
+              >
+                Download CSV
+              </button>
             </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
               {[
