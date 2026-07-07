@@ -55,7 +55,7 @@ const Register = () => {
   return (
     <AuthFrame
       compact
-      contentClassName="max-w-xl"
+      contentClassName="max-w-lg"
       eyebrow="Join the network"
       title="Create account"
       subtitle="Register your organization, then wait for admin verification before accessing platform tools."
@@ -69,7 +69,7 @@ const Register = () => {
       )}
     >
           {/* Role Selector */}
-          <div className="mb-4 grid grid-cols-2 gap-2">
+          <div className="mb-3 grid grid-cols-2 gap-2">
             {[
               { value: "donor", label: "Food Donor", icon: "🍱", desc: "Restaurant, bakery, hotel" },
               { value: "charity", label: "Charity / NGO", icon: "🤝", desc: "Community organization" },
@@ -78,7 +78,7 @@ const Register = () => {
                 key={r.value}
                 type="button"
                 onClick={() => setFormData({ ...formData, role: r.value })}
-                className={`rounded-lg border px-3 py-2.5 text-left transition ${
+                className={`rounded-lg border px-3 py-2 text-left transition ${
                   formData.role === r.value
                     ? "border-emerald-500 bg-emerald-50"
                     : "border-[#dfe4d7] bg-[#f9fbf6] hover:border-emerald-200"
@@ -96,12 +96,12 @@ const Register = () => {
           </div>
 
           {error && (
-            <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm text-red-600">
+            <div className="mb-3 flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600">
               <span>⚠️</span> {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="max-h-[48vh] space-y-3 overflow-y-auto pr-2">
+          <form onSubmit={handleSubmit} className="max-h-[46vh] space-y-2.5 overflow-y-auto pr-2">
             {/* Full Name */}
             <div>
               <label className="mb-1 block text-sm font-medium text-gray-700">Full Name</label>

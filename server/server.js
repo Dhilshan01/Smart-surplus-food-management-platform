@@ -17,18 +17,26 @@ dotenv.config();
 
 const app = express();
 
+const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || '0.0.0.0';
+
 const allowedOrigins = [
     process.env.CLIENT_URL,
+    ...(process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(',').map((origin) => origin.trim()) : []),
     'http://localhost:5173',
     'http://127.0.0.1:5173',
+    'http://192.168.1.41:5173',
 ].filter(Boolean);
 
 const isLocalDevOrigin = (origin) =>
     /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
 
+const isLanDevOrigin = (origin) =>
+    /^http:\/\/(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[0-1])\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}):\d+$/.test(origin);
+
 app.use(cors({
     origin(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin) || isLocalDevOrigin(origin)) {
+        if (!origin || allowedOrigins.includes(origin) || isLocalDevOrigin(origin) || isLanDevOrigin(origin)) {
             return callback(null, true);
         }
         return callback(new Error(`CORS blocked origin: ${origin}`));
@@ -51,5 +59,6 @@ app.get('/', (req, res) => {
     res.send('Smart Food Waste API is running');
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, HOST, () => {
+    console.log(`Server running on http://${HOST}:${PORT}`);
+});

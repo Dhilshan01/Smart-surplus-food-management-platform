@@ -40,6 +40,8 @@ const Login = () => {
 
   return (
     <AuthFrame
+      compact
+      contentClassName="max-w-sm"
       eyebrow="Welcome back"
       title="Sign in"
       subtitle="Access your verified workspace for surplus listings, donations, purchases, and reports."
@@ -53,14 +55,14 @@ const Login = () => {
       )}
     >
       {error && (
-        <div className="mb-5 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm font-semibold text-red-600">
+        <div className="mb-4 rounded-lg border border-red-100 bg-red-50 px-3 py-2.5 text-sm font-semibold text-red-600">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="mb-1.5 block text-sm font-bold text-[#344139]">Email Address</label>
+          <label className="mb-1 block text-sm font-bold text-[#344139]">Email Address</label>
           <input
             type="email"
             name="email"
@@ -68,12 +70,12 @@ const Login = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-4 py-3 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-bold text-[#344139]">Password</label>
+          <label className="mb-1 block text-sm font-bold text-[#344139]">Password</label>
           <input
             type="password"
             name="password"
@@ -81,14 +83,14 @@ const Login = () => {
             value={formData.password}
             onChange={handleChange}
             required
-            className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-4 py-3 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="mt-2 w-full rounded-lg bg-[#18251d] py-3 text-sm font-black text-white transition hover:bg-emerald-700 disabled:opacity-50"
+          className="mt-1 w-full rounded-lg bg-[#18251d] py-2.5 text-sm font-black text-white transition hover:bg-emerald-700 disabled:opacity-50"
         >
           {loading ? "Signing in..." : "Sign In"}
         </button>
