@@ -16,6 +16,7 @@ const navByRole = {
     { label: "Workspace", to: "/donor/dashboard" },
     { label: "Marketplace", to: "/donor/marketplace" },
     { label: "Create Listing", to: "/donor/create-listing" },
+    { label: "Inventory", to: "/donor/inventory" },
   ],
   charity: [{ label: "Food Network", to: "/charity/dashboard" }],
   admin: [

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 
@@ -95,7 +95,9 @@ const CreateListing = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const isEditing = Boolean(id);
+  const inventoryId = searchParams.get("inventoryId");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -111,6 +113,7 @@ const CreateListing = () => {
     storage_conditions: "room_temperature",
     image_url: "",
   });
+  const [inventorySource, setInventorySource] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -160,6 +163,47 @@ const CreateListing = () => {
     loadListing();
   }, [loadListing]);
 
+  const loadInventorySource = useCallback(async () => {
+    if (isEditing || !inventoryId) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await axios.get("http://localhost:5000/api/inventory", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const item = res.data.find((stockItem) => String(stockItem.id) === String(inventoryId));
+
+      if (!item) {
+        setError("Inventory item not found.");
+        return;
+      }
+
+      setInventorySource(item);
+      setFormData((current) => ({
+        ...current,
+        title: item.name || "",
+        description: item.description || "",
+        quantity: `${Number(item.quantity || 0)} ${item.unit || "items"}`,
+        food_category: item.category || "",
+        expires_at: toDateTimeLocal(item.expiry_date),
+        listing_type: "donation",
+        unit_price: item.unit_price || "",
+        storage_conditions: item.storage_conditions || "room_temperature",
+        image_url: item.image_url || "",
+      }));
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not load inventory item.");
+    } finally {
+      setLoading(false);
+    }
+  }, [inventoryId, isEditing, token]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadInventorySource();
+  }, [loadInventorySource]);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -206,6 +250,22 @@ const CreateListing = () => {
       };
       if (isEditing) {
         await axios.put(`http://localhost:5000/api/listings/${id}`, formData, config);
+      } else if (inventorySource) {
+        const quantityToList = Number.parseFloat(String(formData.quantity).replace(",", "."));
+        await axios.post(
+          `http://localhost:5000/api/inventory/${inventorySource.id}/listings`,
+          {
+            listing_type: formData.listing_type,
+            quantity_to_list: Number.isFinite(quantityToList) ? quantityToList : inventorySource.quantity,
+            prepared_at: formData.prepared_at,
+            expires_at: formData.expires_at,
+            pickup_address: formData.pickup_address,
+            city: formData.city,
+            unit_price: formData.unit_price,
+            description: formData.description,
+          },
+          config,
+        );
       } else {
         await axios.post("http://localhost:5000/api/listings", formData, config);
       }
