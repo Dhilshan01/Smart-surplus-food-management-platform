@@ -12,6 +12,7 @@ import transactionRoutes from './routes/transactionRoutes.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import complaintRoutes from './routes/complaintRoutes.js';
 import inventoryRoutes from './routes/inventoryRoutes.js';
+import donorRequestRoutes from './routes/donorRequestRoutes.js';
 
 
 
@@ -58,6 +59,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/donor-requests', donorRequestRoutes);
 
 app.get('/', (req, res) => {
     res.send('Smart Food Waste API is running');

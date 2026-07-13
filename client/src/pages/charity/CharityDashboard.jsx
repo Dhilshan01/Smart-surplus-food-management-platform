@@ -3,6 +3,7 @@ import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 import BrowseListings from "./BrowseListings";
 import MatchedListings from "./MatchedListings";
+import DonationRequests from "./DonationRequests";
 
 
 const CharityDashboard = () => {
@@ -48,7 +49,8 @@ const CharityDashboard = () => {
           {[
             { key: "browse", label: "Browse Food" },
             { key: "matched", label: "Matched For You" },
-            { key: "my-claims", label: "My Claims" },
+            { key: "requests", label: "Requests" },
+            { key: "my-claims", label: "History" },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -68,6 +70,7 @@ const CharityDashboard = () => {
       {/* Content */}
       {activeTab === "browse" && <BrowseListings />}
       {activeTab === "matched" && <MatchedListings />}
+      {activeTab === "requests" && <DonationRequests />}
 
       {activeTab === "my-claims" && (
         <div className="max-w-6xl mx-auto px-4 py-8">

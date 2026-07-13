@@ -28,6 +28,13 @@ CREATE TABLE IF NOT EXISTS claims (
  charity_id INT REFERENCES users(id) ON DELETE CASCADE, notes TEXT, status TEXT DEFAULT 'pending',
  claimed_at TIMESTAMPTZ DEFAULT NOW(), collected_at TIMESTAMPTZ, UNIQUE(listing_id,charity_id)
 );
+CREATE TABLE IF NOT EXISTS charity_donor_requests (
+ id SERIAL PRIMARY KEY, donor_id INT REFERENCES users(id) ON DELETE CASCADE,
+ charity_id INT REFERENCES users(id) ON DELETE CASCADE, food_category TEXT, quantity TEXT NOT NULL,
+ needed_by TIMESTAMPTZ, city TEXT, message TEXT, status TEXT DEFAULT 'pending'
+ CHECK(status IN ('pending','approved','rejected','fulfilled')),
+ created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 CREATE TABLE IF NOT EXISTS notifications (
  id SERIAL PRIMARY KEY, user_id INT REFERENCES users(id) ON DELETE CASCADE, title TEXT, message TEXT,
  type TEXT DEFAULT 'general', is_read BOOLEAN DEFAULT FALSE, created_at TIMESTAMPTZ DEFAULT NOW()

@@ -75,10 +75,15 @@ const DonorDashboard = () => {
 
   const fetchRequests = useCallback(async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/claims/received", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setRequests(res.data);
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      const [claimRequests, donorRequests] = await Promise.all([
+        axios.get("http://localhost:5000/api/claims/received", config),
+        axios.get("http://localhost:5000/api/donor-requests/received", config),
+      ]);
+      setRequests([
+        ...donorRequests.data.map((request) => ({ ...request, request_type: "direct" })),
+        ...claimRequests.data.map((request) => ({ ...request, request_type: "listing" })),
+      ]);
     } catch (error) {
       console.error(error);
     }
@@ -161,6 +166,19 @@ const DonorDashboard = () => {
       );
       fetchRequests();
       fetchListings();
+    } catch (error) {
+      alert(error.response?.data?.message || "Failed to update request");
+    }
+  };
+
+  const handleDirectRequestDecision = async (requestId, status) => {
+    try {
+      await axios.patch(
+        `http://localhost:5000/api/donor-requests/${requestId}/decision`,
+        { status },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      fetchRequests();
     } catch (error) {
       alert(error.response?.data?.message || "Failed to update request");
     }
@@ -380,7 +398,7 @@ const DonorDashboard = () => {
         <section>
           <div className="mb-4">
             <h2 className="text-lg font-black text-slate-950">Donation requests</h2>
-            <p className="mt-1 text-sm text-slate-500">Approve or reject charity requests for your donation listings.</p>
+            <p className="mt-1 text-sm text-slate-500">Approve or reject charity requests for listings or direct food needs.</p>
           </div>
           {requests.length === 0 ? (
             <div className="rounded-lg border border-slate-200 bg-white py-20 text-center text-sm font-semibold text-slate-500">
@@ -388,42 +406,77 @@ const DonorDashboard = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {requests.map((request) => (
-                <article key={request.id} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                      <h3 className="font-black text-slate-950">{request.title}</h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {request.charity_org || request.charity_name} requested {request.quantity} in {request.city}
-                      </p>
-                      {request.notes && <p className="mt-2 text-sm text-slate-600">{request.notes}</p>}
-                    </div>
-                    <div className="flex flex-col items-start gap-2 sm:items-end">
-                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-black capitalize text-slate-700">
-                        {request.status}
-                      </span>
-                      {request.status === "pending" && (
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleRequestDecision(request.id, "approved")}
-                            className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRequestDecision(request.id, "rejected")}
-                            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-700 hover:bg-red-100"
-                          >
-                            Reject
-                          </button>
+              {requests.map((request) => {
+                const isDirect = request.request_type === "direct";
+                return (
+                  <article key={`${request.request_type}-${request.id}`} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-black text-slate-950">
+                            {isDirect ? request.food_category || "Food request" : request.title}
+                          </h3>
+                          <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-black text-slate-600">
+                            {isDirect ? "Direct request" : "Listing request"}
+                          </span>
                         </div>
-                      )}
+                        <p className="mt-1 text-sm text-slate-500">
+                          {request.charity_org || request.charity_name} requested {request.quantity}
+                          {request.city ? ` in ${request.city}` : ""}
+                        </p>
+                        {isDirect && request.needed_by && (
+                          <p className="mt-1 text-xs font-semibold text-slate-400">
+                            Needed by {new Date(request.needed_by).toLocaleString()}
+                          </p>
+                        )}
+                        {(request.message || request.notes) && (
+                          <p className="mt-2 text-sm text-slate-600">{request.message || request.notes}</p>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-start gap-2 sm:items-end">
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-black capitalize text-slate-700">
+                          {request.status}
+                        </span>
+                        {request.status === "pending" && (
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                isDirect
+                                  ? handleDirectRequestDecision(request.id, "approved")
+                                  : handleRequestDecision(request.id, "approved")
+                              }
+                              className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white hover:bg-emerald-700"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                isDirect
+                                  ? handleDirectRequestDecision(request.id, "rejected")
+                                  : handleRequestDecision(request.id, "rejected")
+                              }
+                              className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-700 hover:bg-red-100"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                        {isDirect && request.status === "approved" && (
+                          <button
+                            type="button"
+                            onClick={() => handleDirectRequestDecision(request.id, "fulfilled")}
+                            className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-black text-white hover:bg-blue-700"
+                          >
+                            Mark fulfilled
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           )}
         </section>

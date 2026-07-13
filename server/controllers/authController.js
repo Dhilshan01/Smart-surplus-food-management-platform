@@ -25,6 +25,9 @@ export const register = async (req, res) => {
     if (!full_name || !email || !password) {
         return res.status(400).json({ message: 'Full name, email, and password are required' });
     }
+    if (!organization_name || !registration_number) {
+        return res.status(400).json({ message: 'Organization name and registration number are required' });
+    }
     if (password.length < 6) {
         return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }

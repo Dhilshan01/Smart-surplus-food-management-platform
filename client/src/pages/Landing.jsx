@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import landingVideo from "../../Logos/Landing_page.mp4";
 
 const metrics = [
   { value: "1 in 3", label: "Meals produced globally are wasted", delay: "animate-delay-100" },
@@ -43,7 +44,6 @@ const workflow = [
 ];
 
 const modules = [
-  "JWT authentication and role-based access control",
   "Surplus food listing management",
   "B2B marketplace for discounted food sales",
   "Charity donation claim workflow",
@@ -76,8 +76,16 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-white text-slate-950">
       <section className="relative overflow-hidden border-b border-emerald-100 bg-[#eef7ec]">
-        <div className="pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(#8bcfa7_1px,transparent_1px),linear-gradient(90deg,#8bcfa7_1px,transparent_1px)] [background-size:48px_48px]" />
-        <div className="pointer-events-none absolute inset-0 bg-white/45" />
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          src={landingVideo}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-white/70" />
         <div className="mx-auto grid min-h-[calc(100vh-65px)] max-w-7xl items-center gap-10 px-4 py-16 lg:grid-cols-[1fr_420px]">
           <div className="relative max-w-3xl">
             <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">

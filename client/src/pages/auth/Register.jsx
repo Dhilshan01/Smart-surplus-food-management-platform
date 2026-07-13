@@ -137,14 +137,11 @@ const Register = () => {
 
             {/* Organization */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Organization Name
-                <span className="text-gray-400 font-normal ml-1">(optional)</span>
-              </label>
+              <label className="mb-1 block text-sm font-medium text-gray-700">Organization Name</label>
               <input
                 type="text" name="organization_name"
                 placeholder={formData.role === "donor" ? "e.g. Colombo Bakery" : "e.g. Hope Foundation"}
-                value={formData.organization_name} onChange={handleChange}
+                value={formData.organization_name} onChange={handleChange} required
                 className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
@@ -152,14 +149,11 @@ const Register = () => {
             {formData.role === "donor" && (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    Registration Number
-                    <span className="text-gray-400 font-normal ml-1">(optional)</span>
-                  </label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Registration Number</label>
                   <input
                     type="text" name="registration_number"
                     placeholder="Business reg. no."
-                    value={formData.registration_number} onChange={handleChange}
+                    value={formData.registration_number} onChange={handleChange} required
                     className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
@@ -185,14 +179,11 @@ const Register = () => {
             {formData.role === "charity" && (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    Registration Number
-                    <span className="text-gray-400 font-normal ml-1">(optional)</span>
-                  </label>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">Registration Number</label>
                   <input
                     type="text" name="registration_number"
                     placeholder="Charity reg. no."
-                    value={formData.registration_number} onChange={handleChange}
+                    value={formData.registration_number} onChange={handleChange} required
                     className="w-full rounded-lg border border-[#dfe4d7] bg-[#f9fbf6] px-3 py-2.5 text-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>

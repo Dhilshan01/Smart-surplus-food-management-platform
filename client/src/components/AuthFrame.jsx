@@ -12,22 +12,23 @@ const AuthFrame = ({ title, subtitle, eyebrow, children, footer, compact = false
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-5xl items-center justify-center">
         <section className={`grid w-full overflow-hidden rounded-2xl border border-[#d8e1d4] bg-[#fffffb] shadow-xl shadow-[#18251d]/12 ${shellHeight} lg:grid-cols-[0.9fr_1.1fr]`}>
           <div className={`relative hidden overflow-hidden bg-[#13251c] ${sidePadding} text-white lg:block`}>
-            <div className="absolute inset-y-0 right-[-18%] w-[46%] rounded-l-[120px] bg-[#fffffb]" />
             <div className="absolute bottom-0 left-0 h-28 w-full bg-[#1d6f49]/35" />
             <div className="absolute left-10 top-10 h-12 w-12 rounded-lg bg-[#d8f3dc] text-center text-sm font-black leading-[3rem] text-[#13251c]">
               FF
             </div>
-            <div className="relative z-10 flex h-full max-w-sm flex-col justify-center">
+            <div className="relative z-10 flex h-full max-w-[25rem] flex-col justify-center pr-4 xl:max-w-md">
               <p className="text-xs font-bold uppercase tracking-[0.26em] text-[#a9d8b8]">{eyebrow}</p>
               <h1 className={`mt-4 ${sideTitle} font-black leading-tight tracking-tight`}>FoodFlow</h1>
-              <p className="mt-3 text-sm font-semibold text-white/85">Surplus food operations, verified and organized.</p>
+              <p className="mt-3 max-w-[22rem] text-sm font-semibold leading-6 text-white/85">
+                Surplus food operations, verified and organized.
+              </p>
               <p className="mt-4 text-sm leading-6 text-white/62">
                 Manage listings, donations, marketplace purchases, and waste impact from one calm workspace.
               </p>
               <div className={`${compact ? "mt-5" : "mt-7"} grid grid-cols-3 gap-2`}>
                 {["Safety", "Expiry", "Impact"].map((item) => (
-                  <div key={item} className="rounded-lg border border-white/10 bg-white/8 px-2.5 py-2.5">
-                    <p className="text-xs font-bold text-white/75">{item}</p>
+                  <div key={item} className="min-w-0 rounded-lg border border-white/10 bg-white/8 px-2.5 py-2.5">
+                    <p className="truncate text-xs font-bold text-white/75">{item}</p>
                   </div>
                 ))}
               </div>
