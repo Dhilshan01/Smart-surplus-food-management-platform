@@ -71,8 +71,8 @@ const Register = () => {
           {/* Role Selector */}
           <div className="mb-3 grid grid-cols-2 gap-2">
             {[
-              { value: "donor", label: "Food Donor", icon: "🍱", desc: "Restaurant, bakery, hotel" },
-              { value: "charity", label: "Charity / NGO", icon: "🤝", desc: "Community organization" },
+              { value: "donor", label: "Food Donor", icon: "", desc: "Restaurant, bakery, hotel" },
+              { value: "charity", label: "Charity / NGO", icon: "", desc: "Community organization" },
             ].map((r) => (
               <button
                 key={r.value}
@@ -97,7 +97,7 @@ const Register = () => {
 
           {error && (
             <div className="mb-3 flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-600">
-              <span>⚠️</span> {error}
+              <span>!</span> {error}
             </div>
           )}
 
